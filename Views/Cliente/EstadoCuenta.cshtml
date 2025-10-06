@@ -1,0 +1,52 @@
+@model Audicob.Models.ViewModels.Cobranza.EstadoCuentaViewModel
+
+<div class="container">
+    <h2>Estado de Cuenta</h2>
+    <div class="mb-4">
+        <p><strong>Total Deuda:</strong> $@Model.TotalDeuda</p>
+        <p><strong>Capital:</strong> $@Model.Capital</p>
+        <p><strong>Intereses:</strong> $@Model.Intereses</p>
+    </div>
+
+    <h3>Historial de Transacciones</h3>
+    <div class="mb-4">
+        <form method="get" action="@Url.Action("FiltrarHistorial", "Abono")">
+            <div class="input-group">
+                <input type="text" name="searchTerm" class="form-control" placeholder="Buscar por descripción" />
+                <input type="date" name="fechaDesde" class="form-control" />
+                <input type="date" name="fechaHasta" class="form-control" />
+                <button type="submit" class="btn btn-primary">Filtrar</button>
+            </div>
+        </form>
+    </div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Descripción</th>
+                <th>Monto</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var transaccion in Model.HistorialTransacciones)
+            {
+                <tr>
+                    <td>@transaccion.Fecha</td>
+                    <td>@transaccion.Descripcion</td>
+                    <td>@transaccion.Monto</td>
+                    <td>@transaccion.Estado</td>
+                    <td>
+                        <a href="@Url.Action("VerComprobante", "Abono", new { transaccionId = transaccion.Id })" class="btn btn-info btn-sm">Ver Comprobante</a>
+                        <a href="@Url.Action("ReenviarComprobante", "Abono", new { metodo = "email", transaccionId = transaccion.Id })" class="btn btn-success btn-sm">Reenviar por Email</a>
+                        <a href="@Url.Action("ReenviarComprobante", "Abono", new { metodo = "whatsapp", transaccionId = transaccion.Id })" class="btn btn-warning btn-sm">Reenviar por WhatsApp</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <a href="@Url.Action("ExportarPdf", "Abono")" class="btn btn-primary">Exportar a PDF</a>
+</div>

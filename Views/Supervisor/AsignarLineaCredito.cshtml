@@ -1,0 +1,47 @@
+@model Audicob.Models.ViewModels.Supervisor.AsignacionLineaCreditoViewModel
+@{
+    ViewData["Title"] = "Asignar Línea de Crédito";
+}
+<h2 class="mb-4">Asignar Línea de Crédito</h2>
+<p class="lead">Completa el siguiente formulario para asignar una línea de crédito al cliente evaluado.</p>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <form asp-action="AsignarLineaCredito" method="post">
+            <input type="hidden" asp-for="ClienteId" />
+
+            <div class="mb-3">
+                <label class="form-label">Nombre del Cliente</label>
+                <input class="form-control" value="@Model.NombreCliente" readonly />
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">Deuda Total</label>
+                    <input class="form-control" value="@Model.DeudaTotal.ToString("C")" readonly />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Ingresos Mensuales</label>
+                    <input class="form-control" value="@Model.IngresosMensuales.ToString("C")" readonly />
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="MontoAsignado" class="form-label">Monto a Asignar</label>
+                <input asp-for="MontoAsignado" class="form-control" placeholder="Ej. 5000.00" />
+                <span asp-validation-for="MontoAsignado" class="text-danger small"></span>
+            </div>
+
+            <button type="submit" class="btn btn-success">
+                <i class="bi bi-check-circle me-1"></i> Asignar Crédito
+            </button>
+            <a asp-action="Dashboard" class="btn btn-outline-secondary ms-2">
+                <i class="bi bi-arrow-left-circle me-1"></i> Cancelar
+            </a>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,54 @@
+@model List<Audicob.Models.EvaluacionCliente>
+@{
+    ViewData["Title"] = "Historial de Evaluaciones";
+}
+<h2 class="mb-4">Historial de Evaluaciones del Cliente</h2>
+<p class="lead">Consulta las evaluaciones realizadas por supervisores sobre este cliente.</p>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        Este cliente aún no tiene evaluaciones registradas.
+    </div>
+}
+else
+{
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>Fecha</th>
+                <th>Estado</th>
+                <th>Responsable</th>
+                <th>Comentario</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var eval in Model)
+        {
+            <tr>
+                <td>@eval.Fecha.ToShortDateString()</td>
+                <td>
+                    @if (eval.Estado == "Aprobado")
+                    {
+                        <span class="badge bg-success">@eval.Estado</span>
+                    }
+                    else if (eval.Estado == "Rechazado")
+                    {
+                        <span class="badge bg-danger">@eval.Estado</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">@eval.Estado</span>
+                    }
+                </td>
+                <td>@eval.Responsable</td>
+                <td>@eval.Comentario</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+<a asp-action="Dashboard" class="btn btn-outline-primary mt-3">
+    <i class="bi bi-arrow-left-circle me-1"></i> Volver al Panel
+</a>

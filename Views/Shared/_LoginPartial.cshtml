@@ -1,0 +1,49 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using Audicob.Models
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+<ul class="navbar-nav ms-auto">
+    @if (SignInManager.IsSignedIn(User))
+    {
+        var user = await UserManager.GetUserAsync(User);
+        var roles = await UserManager.GetRolesAsync(user);
+        var rol = roles.FirstOrDefault() ?? "Sin rol";  // Si no tiene rol asignado, mostrar "Sin rol"
+
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle text-white" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-person-circle me-1"></i> @user.FullName (@rol)
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                <li>
+                    <form asp-controller="Account" asp-action="Logout" method="post" class="m-0">
+                        <button type="submit" class="dropdown-item">
+                            <i class="bi bi-box-arrow-right me-1"></i> Cerrar sesión
+                        </button>
+                    </form>
+                </li>
+                @if (roles.Contains("Administrador") || roles.Contains("Supervisor"))
+                {
+                    <li>
+                        <a class="dropdown-item" asp-controller="Account" asp-action="Register">
+                            <i class="bi bi-person-plus me-1"></i> Crear otro usuario
+                        </a>
+                    </li>
+                }
+            </ul>
+        </li>
+    }
+    else
+    {
+        <li class="nav-item">
+            <a class="nav-link text-white" asp-controller="Account" asp-action="Login">
+                <i class="bi bi-box-arrow-in-right me-1"></i> Iniciar sesión
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-white" asp-controller="Account" asp-action="Register">
+                <i class="bi bi-person-plus me-1"></i> Registrarse
+            </a>
+        </li>
+    }
+</ul>

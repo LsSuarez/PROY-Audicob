@@ -1,0 +1,108 @@
+@model Audicob.Models.ViewModels.Cliente.ClienteDashboardViewModel
+@{
+    ViewData["Title"] = "Panel Cliente";
+}
+<h2 class="mb-4">Mi Panel</h2>
+<p class="lead">Consulta tu estado de cuenta, historial de pagos y realiza abonos desde aquí.</p>
+
+<!-- Tarjetas resumen -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card text-bg-danger shadow-sm">
+            <div class="card-body text-center">
+                <h6>Deuda Total</h6>
+                <h3>S/ @Model.DeudaTotal</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-bg-info shadow-sm">
+            <div class="card-body text-center">
+                <h6>Ingresos Mensuales</h6>
+                <h3>S/ @Model.IngresosMensuales</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-bg-success shadow-sm">
+            <div class="card-body text-center">
+                <h6>Pagos Realizados</h6>
+                <h3>@Model.PagosMontos.Count</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Gráfico de historial de pagos -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-secondary text-white">Historial de Pagos</div>
+    <div class="card-body">
+        <canvas id="pagosChart"></canvas>
+    </div>
+</div>
+
+<!-- Tabla de pagos recientes -->
+<h4 class="mt-5">Últimos Pagos</h4>
+<table class="table table-bordered table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th>Fecha</th>
+            <th>Monto</th>
+            <th>Estado</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var pago in Model.PagosRecientes)
+    {
+        <tr>
+            <td>@pago.Fecha.ToShortDateString()</td>
+            <td>S/ @pago.Monto</td>
+            <td>@pago.Estado</td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+<!-- Tabla de evaluaciones -->
+<h4 class="mt-5">Evaluaciones Recibidas</h4>
+<table class="table table-bordered table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th>Fecha</th>
+            <th>Estado</th>
+            <th>Responsable</th>
+            <th>Comentario</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var eval in Model.Evaluaciones)
+    {
+        <tr>
+            <td>@eval.Fecha.ToShortDateString()</td>
+            <td>@eval.Estado</td>
+            <td>@eval.Responsable</td>
+            <td>@eval.Comentario</td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        new Chart(document.getElementById('pagosChart'), {
+            type: 'line',
+            data: {
+                labels: @Html.Raw(Json.Serialize(Model.PagosFechas)),
+                datasets: [{
+                    label: 'Monto (S/)',
+                    data: @Html.Raw(Json.Serialize(Model.PagosMontos)),
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    fill: true,
+                    tension: 0.3
+                }]
+            }
+        });
+    </script>
+}

@@ -1,0 +1,87 @@
+@model Audicob.Models.ViewModels.Asesor.AsesorDashboardViewModel
+@{
+    ViewData["Title"] = "Panel Asesor";
+}
+<h2 class="mb-4">Panel del Asesor de Cobranza</h2>
+<p class="lead">Consulta tu cartera de clientes, registra pagos y da seguimiento a las deudas.</p>
+
+<!-- Tarjetas resumen -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card text-bg-primary shadow-sm">
+            <div class="card-body text-center">
+                <h6>Clientes Asignados</h6>
+                <h3>@Model.TotalClientesAsignados</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-bg-danger shadow-sm">
+            <div class="card-body text-center">
+                <h6>Deuda Total en Cartera</h6>
+                <h3>S/ @Model.TotalDeudaCartera</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-bg-success shadow-sm">
+            <div class="card-body text-center">
+                <h6>Pagos Recientes</h6>
+                <h3>S/ @Model.TotalPagosRecientes</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Gráfico de deudas por cliente -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-secondary text-white">Deuda por Cliente</div>
+    <div class="card-body">
+        <canvas id="deudaChart"></canvas>
+    </div>
+</div>
+
+<!-- Tabla de clientes asignados -->
+<h4 class="mt-5">Detalle de Clientes Asignados</h4>
+<table class="table table-bordered table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th>Nombre</th>
+            <th>Documento</th>
+            <th>Deuda</th>
+            <th>Ingresos</th>
+            <th>Última Actualización</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var cliente in Model.ClientesAsignados)
+    {
+        <tr>
+            <td>@cliente.Nombre</td>
+            <td>@cliente.Documento</td>
+            <td>S/ @cliente.Deuda</td>
+            <td>S/ @cliente.IngresosMensuales</td>
+            <td>@cliente.FechaActualizacion.ToShortDateString()</td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        new Chart(document.getElementById('deudaChart'), {
+            type: 'bar',
+            data: {
+                labels: @Html.Raw(Json.Serialize(Model.Clientes)),
+                datasets: [{
+                    label: 'Deuda (S/)',
+                    data: @Html.Raw(Json.Serialize(Model.DeudasPorCliente)),
+                    backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 1
+                }]
+            }
+        });
+    </script>
+}

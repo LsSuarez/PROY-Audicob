@@ -1,0 +1,99 @@
+@model Audicob.Models.ViewModels.Cobranza.CalculoPenalidadDetalleViewModel
+
+@{
+    ViewData["Title"] = "Detalle de Cálculo de Penalidad";
+}
+
+<div class="container">
+    <h2 class="mb-4">Detalle del Cálculo de Penalidad por Mora</h2>
+    
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Información del Cliente</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Cliente:</strong> @Model.ClienteNombre</p>
+                    <p><strong>Monto Original:</strong> S/ @Model.MontoOriginal.ToString("N2")</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Fecha de Vencimiento:</strong> @Model.FechaVencimiento.ToString("dd/MM/yyyy")</p>
+                    <p><strong>Días de Atraso:</strong> @Model.DiasDeAtraso días</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0">Fórmula de Cálculo</h5>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-light border">
+                <h6 class="text-center mb-3">@Model.FormulaTexto</h6>
+            </div>
+            
+            <h6 class="mt-4 mb-3">Paso a Paso:</h6>
+            <ol class="calculation-steps">
+                <li class="mb-3">
+                    <strong>Determinar la tasa mensual:</strong>
+                    <p class="ms-3 mb-0">@Model.Paso1</p>
+                </li>
+                <li class="mb-3">
+                    <strong>Calcular la tasa diaria:</strong>
+                    <p class="ms-3 mb-0">@Model.Paso2</p>
+                </li>
+                <li class="mb-3">
+                    <strong>Aplicar la fórmula:</strong>
+                    <p class="ms-3 mb-0">@Model.Paso3</p>
+                </li>
+                <li class="mb-3">
+                    <strong>Resultado:</strong>
+                    <p class="ms-3 mb-0 text-primary fw-bold">@Model.Paso4</p>
+                </li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0">Resumen Final</h5>
+        </div>
+        <div class="card-body">
+            <table class="table table-borderless">
+                <tr>
+                    <td class="text-end"><strong>Monto Original:</strong></td>
+                    <td>S/ @Model.MontoOriginal.ToString("N2")</td>
+                </tr>
+                <tr>
+                    <td class="text-end"><strong>Penalidad por Mora:</strong></td>
+                    <td class="text-danger">+ S/ @Model.PenalidadCalculada.ToString("N2")</td>
+                </tr>
+                <tr class="table-active">
+                    <td class="text-end"><strong>TOTAL A PAGAR:</strong></td>
+                    <td class="fw-bold fs-5">S/ @Model.TotalAPagar.ToString("N2")</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="text-center">
+        <a asp-action="Dashboard" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver al Dashboard
+        </a>
+        <a asp-action="GenerarComprobante" asp-route-clienteId="@ViewBag.ClienteId" class="btn btn-primary">
+            <i class="bi bi-file-pdf"></i> Generar Comprobante PDF
+        </a>
+    </div>
+</div>
+
+<style>
+    .calculation-steps li {
+        font-size: 1.1rem;
+        line-height: 1.8;
+    }
+    .calculation-steps strong {
+        color: #0d6efd;
+    }
+</style>

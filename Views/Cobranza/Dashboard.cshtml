@@ -1,0 +1,87 @@
+@model Audicob.Models.ViewModels.Cobranza.CobranzaDashboardViewModel
+
+@{
+    ViewData["Title"] = "Panel de Cobranza";
+}
+
+<div class="container">
+    <h2 class="my-4">Panel de Cobranza</h2>
+
+    <!-- Búsqueda de Cliente -->
+    <div class="mb-4">
+        <form method="get" action="@Url.Action("Dashboard", "Cobranza")">
+            <div class="input-group">
+                <input type="text" name="searchTerm" id="clienteSearch" class="form-control" 
+                       placeholder="Buscar Cliente por nombre o ID" 
+                       value="@Model.SearchTerm" aria-label="Buscar Cliente" />
+                <button type="submit" class="btn btn-primary" aria-label="Buscar">Buscar</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Mensaje cuando no se encuentren resultados -->
+    @if (Model.NoResultados)
+    {
+        <div class="alert alert-warning" role="alert">
+            No se encontraron resultados para la búsqueda.
+        </div>
+    }
+
+    <!-- Total de Clientes Asignados -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-bg-primary shadow-sm">
+                <div class="card-body text-center">
+                    <h6>Total de Clientes Asignados</h6>
+                    <h3>@Model.TotalClientesAsignados</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deudas por Cliente -->
+    <h4 class="mt-5">Deudas por Cliente</h4>
+    <table class="table table-bordered table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Cliente</th>
+                <th>Deuda Total</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var cliente in Model.Clientes)
+            {
+                <tr>
+                    <td>@cliente.ClienteNombre</td>
+                    <td>@cliente.DeudaTotal</td>
+                    <td>
+                        <button class="btn btn-info btn-sm" onclick="consultarDeuda(@cliente.ClienteId)">Consultar Deuda</button>
+                        <button class="btn btn-warning btn-sm" onclick="actualizarPenalidad(@cliente.ClienteId)">Actualizar</button>
+                        <button class="btn btn-success btn-sm" onclick="verDetallesCalculados(@cliente.ClienteId)">Ver Detalles Calculados</button>
+                        <button class="btn btn-primary btn-sm" onclick="generarComprobante(@cliente.ClienteId)">Generar Comprobante</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<script>
+    // Funciones para redirigir según las acciones de los botones
+    function consultarDeuda(clienteId) {
+        window.location.href = '/Cobranza/ConsultarDeuda?clienteId=' + clienteId;
+    }
+
+    function actualizarPenalidad(clienteId) {
+        window.location.href = '/Cobranza/ActualizarPenalidad?clienteId=' + clienteId;
+    }
+
+    function verDetallesCalculados(clienteId) {
+        window.location.href = '/Cobranza/VerDetallesCalculados?clienteId=' + clienteId;
+    }
+
+    function generarComprobante(clienteId) {
+        window.location.href = '/Cobranza/GenerarComprobante?clienteId=' + clienteId;
+    }
+</script>

@@ -1,0 +1,63 @@
+﻿@{
+    ViewData["Title"] = "Bienvenido a AUDICOB";
+}
+
+<div class="container mt-5 text-center">
+    <h1 class="display-4 fw-bold text-primary">AUDICOB ERP</h1>
+    <p class="lead mb-4">Sistema Inteligente de Gestión de Cobranza</p>
+
+    @if (User.Identity.IsAuthenticated)
+    {
+        <p>¡Bienvenido, @User.Identity.Name!</p>
+        <form asp-controller="Account" asp-action="Logout" method="post">
+            <button type="submit" class="btn btn-danger btn-lg">Cerrar Sesión</button>
+        </form>
+    }
+    else
+    {
+        <div class="mb-4">
+            <a class="btn btn-primary btn-lg me-2" asp-controller="Account" asp-action="Login">
+                <i class="bi bi-box-arrow-in-right me-1"></i> Iniciar Sesión
+            </a>
+            <a class="btn btn-outline-secondary btn-lg" asp-controller="Account" asp-action="Register">
+                <i class="bi bi-person-plus me-1"></i> Registrarse
+            </a>
+        </div>
+    }
+
+    <hr class="my-5" />
+
+    <div class="row justify-content-center">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <i class="bi bi-bar-chart-line-fill text-primary fs-2 mb-3"></i>
+                    <h5 class="card-title">Control Financiero</h5>
+                    <p class="card-text">Visualiza pagos, deudas y líneas de crédito en tiempo real.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <i class="bi bi-person-check-fill text-success fs-2 mb-3"></i>
+                    <h5 class="card-title">Evaluación Inteligente</h5>
+                    <p class="card-text">Segmenta clientes y asigna créditos según su perfil financiero.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <i class="bi bi-shield-lock-fill text-danger fs-2 mb-3"></i>
+                    <h5 class="card-title">Seguridad por Rol</h5>
+                    <p class="card-text">Acceso personalizado para administradores, supervisores, asesores y clientes.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.js"></script>
+}

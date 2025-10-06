@@ -1,0 +1,63 @@
+@model Audicob.Models.ViewModels.Supervisor.EvaluacionViewModel
+@{
+    ViewData["Title"] = "Evaluar Cliente";
+}
+<h2 class="mb-4">Evaluar Cliente</h2>
+<p class="lead">Completa la evaluación del cliente según su perfil financiero.</p>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <form asp-action="Evaluar" method="post">
+            <input type="hidden" asp-for="ClienteId" />
+
+            <div class="mb-3">
+                <label class="form-label">Nombre del Cliente</label>
+                <input class="form-control" value="@Model.NombreCliente" readonly />
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">Ingresos Mensuales</label>
+                    <input class="form-control" value="@Model.IngresosMensuales.ToString("C")" readonly />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Deuda Total</label>
+                    <input class="form-control" value="@Model.DeudaTotal.ToString("C")" readonly />
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Estado" class="form-label">Estado de Evaluación</label>
+                <select asp-for="Estado" class="form-select">
+                    <option value="Pendiente">Pendiente</option>
+                    <option value="Aprobado">Aprobado</option>
+                    <option value="Rechazado">Rechazado</option>
+                </select>
+                <span asp-validation-for="Estado" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Responsable" class="form-label">Responsable</label>
+                <input asp-for="Responsable" class="form-control" placeholder="Nombre del evaluador" />
+                <span asp-validation-for="Responsable" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Comentario" class="form-label">Comentario</label>
+                <textarea asp-for="Comentario" class="form-control" rows="4" placeholder="Observaciones o notas..."></textarea>
+                <span asp-validation-for="Comentario" class="text-danger small"></span>
+            </div>
+
+            <button type="submit" class="btn btn-success">
+                <i class="bi bi-check-circle me-1"></i> Guardar Evaluación
+            </button>
+            <a asp-action="Dashboard" class="btn btn-outline-secondary ms-2">
+                <i class="bi bi-arrow-left-circle me-1"></i> Cancelar
+            </a>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

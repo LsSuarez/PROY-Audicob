@@ -1,0 +1,142 @@
+@model Audicob.Models.ViewModels.Cobranza.ComprobanteDeudaViewModel
+
+@{
+    Layout = "_Layout";  // Asegúrate de que el layout esté correctamente definido
+}
+
+<div class="container">
+    <!-- Cabecera de cliente -->
+    <div class="header">
+        <div class="client-info">
+            <h2>Sistema de Cobranza de Productos de Belleza</h2>
+            <p>Visualización de Penalidad por Mora</p>
+        </div>
+        <div class="client-details">
+            <div class="client-name">
+                <strong>Nombre:</strong> @Model.Cliente
+            </div>
+            <div class="client-id">
+                <strong>ID:</strong> 103255
+            </div>
+            <div class="client-doc">
+                <strong>Doc. Identidad:</strong> 00759
+            </div>
+            <div class="client-status">
+                <strong>Situación Deudor:</strong> PROMESA
+            </div>
+            <div class="client-cartera">
+                <strong>Cartera:</strong> Belcorp
+            </div>
+        </div>
+    </div>
+
+    <!-- Resumen de deuda -->
+    <div class="summary">
+        <h3>Resumen de Deuda</h3>
+        <div class="summary-item">
+            <span>Saldo Original</span>
+            <span>S/ @Model.MontoDeuda</span>
+        </div>
+        <div class="summary-item">
+            <span>Días de Atraso</span>
+            <span>@Model.DiasDeAtraso días</span>
+        </div>
+        <div class="summary-item">
+            <span>Tasa de Penalidad</span>
+            <span>@Model.TasaPenalidad % mensual</span>
+        </div>
+        <div class="summary-item">
+            <span>Fecha de Vencimiento</span>
+            <span>@Model.FechaVencimiento.ToString("dd/MM/yyyy")</span>
+        </div>
+    </div>
+
+    <!-- Detalle de Penalidad Calculada -->
+    <div class="penalty-details">
+        <h3>Detalle de Penalidad Calculada</h3>
+        <div class="penalty-item">
+            <span>Monto Original de la Deuda:</span>
+            <span>S/ @Model.MontoDeuda</span>
+        </div>
+        <div class="penalty-item">
+            <span>Días de Atraso:</span>
+            <span>@Model.DiasDeAtraso</span>
+        </div>
+        <div class="penalty-item">
+            <span>Tasa de Penalidad Aplicada:</span>
+            <span>@Model.TasaPenalidad % mensual</span>
+        </div>
+        <div class="penalty-item">
+            <span>Penalidad Calculada:</span>
+            <span>S/ @Model.PenalidadCalculada</span>
+        </div>
+    </div>
+
+    <!-- Total a Pagar -->
+    <div class="total">
+        <h3>Total Actualizado a Pagar</h3>
+        <div class="total-amount">
+            <span>S/ @Model.TotalAPagar</span>
+        </div>
+        <button class="btn btn-success">Generar Comprobante</button>
+        <button class="btn btn-info">Registrar Acuerdo de Pago</button>
+    </div>
+</div>
+
+<!-- Estilos -->
+<style>
+    .container {
+        width: 80%;
+        margin: 0 auto;
+        font-family: Arial, sans-serif;
+    }
+    .header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+    }
+    .client-info h2 {
+        margin: 0;
+        color: #2c3e50;
+    }
+    .client-details div {
+        margin: 5px 0;
+    }
+    .summary, .penalty-details {
+        margin: 20px 0;
+        padding: 10px;
+        border: 1px solid #e0e0e0;
+        border-radius: 5px;
+    }
+    .summary-item, .penalty-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+    }
+    .total {
+        margin-top: 30px;
+        text-align: center;
+    }
+    .total-amount {
+        font-size: 20px;
+        margin-bottom: 20px;
+        font-weight: bold;
+        color: #e74c3c;
+    }
+    .btn {
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        border: none;
+        border-radius: 5px;
+    }
+    .btn-success {
+        background-color: #28a745;
+        color: white;
+        margin-right: 10px;
+    }
+    .btn-info {
+        background-color: #17a2b8;
+        color: white;
+    }
+</style>

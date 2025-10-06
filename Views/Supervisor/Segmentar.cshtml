@@ -1,0 +1,54 @@
+@model Audicob.Models.ViewModels.Supervisor.SegmentacionViewModel
+@{
+    ViewData["Title"] = "Segmentar Clientes";
+}
+<h2 class="mb-4">Segmentar Clientes por Perfil Financiero</h2>
+<p class="lead">Filtra clientes según sus ingresos y nivel de deuda para identificar riesgos o oportunidades.</p>
+
+<form asp-action="Segmentar" method="post" class="mb-4">
+    <div class="row">
+        <div class="col-md-3">
+            <label asp-for="MinDeuda" class="form-label">Deuda Mínima</label>
+            <input asp-for="MinDeuda" class="form-control" />
+        </div>
+        <div class="col-md-3">
+            <label asp-for="MaxDeuda" class="form-label">Deuda Máxima</label>
+            <input asp-for="MaxDeuda" class="form-control" />
+        </div>
+        <div class="col-md-3">
+            <label asp-for="MinIngresos" class="form-label">Ingresos Mínimos</label>
+            <input asp-for="MinIngresos" class="form-control" />
+        </div>
+        <div class="col-md-3">
+            <label asp-for="MaxIngresos" class="form-label">Ingresos Máximos</label>
+            <input asp-for="MaxIngresos" class="form-control" />
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary mt-3">
+        <i class="bi bi-funnel-fill me-1"></i> Segmentar
+    </button>
+</form>
+
+@if (Model.ClientesSegmentados.Any())
+{
+    <h4>Clientes Segmentados</h4>
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>Nombre</th>
+                <th>Deuda Total</th>
+                <th>Ingresos Mensuales</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var cliente in Model.ClientesSegmentados)
+        {
+            <tr>
+                <td>@cliente.Nombre</td>
+                <td>S/ @cliente.DeudaTotal</td>
+                <td>S/ @cliente.IngresosMensuales</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}

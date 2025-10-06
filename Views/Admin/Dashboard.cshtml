@@ -1,0 +1,35 @@
+@model Audicob.Models.ViewModels.Admin.AdminDashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard Administrador";
+}
+<h2 class="mb-4">Panel de Administración</h2>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card text-bg-primary shadow-sm">
+            <div class="card-body text-center">
+                <h6>Total de Usuarios</h6>
+                <h3>@Model.TotalUsuarios</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h4>Usuarios por Rol</h4>
+<table class="table table-bordered table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th>Rol</th>
+            <th>Cantidad</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var rol in Model.UsuariosPorRol)
+    {
+        <tr>
+            <td>@rol.Key</td>
+            <td>@rol.Value</td>
+        </tr>
+    }
+    </tbody>
+</table>
