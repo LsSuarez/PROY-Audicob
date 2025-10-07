@@ -1,47 +1,49 @@
-@model Audicob.Models.ViewModels.Supervisor.AsignacionLineaCreditoViewModel
+@using System.Linq
 @{
+    Layout = "_Layout";
     ViewData["Title"] = "Asignar Línea de Crédito";
+    var clientes = ViewBag.Clientes as IEnumerable<dynamic>;
 }
-<h2 class="mb-4">Asignar Línea de Crédito</h2>
-<p class="lead">Completa el siguiente formulario para asignar una línea de crédito al cliente evaluado.</p>
 
-<div class="card shadow-sm">
-    <div class="card-body">
-        <form asp-action="AsignarLineaCredito" method="post">
-            <input type="hidden" asp-for="ClienteId" />
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger mt-4">@TempData["Error"]</div>
+    TempData["Error"] = null; // Limpia TempData después de mostrar
+}
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success mt-4">@TempData["Success"]</div>
+    TempData["Success"] = null; // Limpia TempData después de mostrar
+}
 
-            <div class="mb-3">
-                <label class="form-label">Nombre del Cliente</label>
-                <input class="form-control" value="@Model.NombreCliente" readonly />
-            </div>
-
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label class="form-label">Deuda Total</label>
-                    <input class="form-control" value="@Model.DeudaTotal.ToString("C")" readonly />
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h2 class="mb-4">Asignar Línea de Crédito</h2>
+            <form asp-action="AsignarLineaCredito" method="post">
+                <div class="mb-3">
+                    <label class="form-label">Cliente</label>
+                    @if (clientes != null && clientes.Count() > 0)
+                    {
+                        <select name="clienteId" class="form-control">
+                            <option value="">Seleccione un cliente</option>
+                            @foreach (var c in clientes)
+                            {
+                                <option value="@c.Id">@c.Nombre</option>
+                            }
+                        </select>
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning">No hay clientes disponibles.</div>
+                    }
                 </div>
-                <div class="col-md-6">
-                    <label class="form-label">Ingresos Mensuales</label>
-                    <input class="form-control" value="@Model.IngresosMensuales.ToString("C")" readonly />
+                <div class="mb-3">
+                    <label class="form-label">Monto a Asignar</label>
+                    <input name="monto" type="number" step="0.01" class="form-control" required />
                 </div>
-            </div>
-
-            <div class="mb-3">
-                <label asp-for="MontoAsignado" class="form-label">Monto a Asignar</label>
-                <input asp-for="MontoAsignado" class="form-control" placeholder="Ej. 5000.00" />
-                <span asp-validation-for="MontoAsignado" class="text-danger small"></span>
-            </div>
-
-            <button type="submit" class="btn btn-success">
-                <i class="bi bi-check-circle me-1"></i> Asignar Crédito
-            </button>
-            <a asp-action="Dashboard" class="btn btn-outline-secondary ms-2">
-                <i class="bi bi-arrow-left-circle me-1"></i> Cancelar
-            </a>
-        </form>
+                <button type="submit" class="btn btn-primary">Asignar Crédito</button>
+            </form>
+        </div>
     </div>
 </div>
-
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-}

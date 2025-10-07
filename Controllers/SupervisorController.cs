@@ -121,82 +121,68 @@ namespace Audicob.Controllers
             return RedirectToAction("Dashboard");
         }
 
-        // GET: Asignar línea de crédito
-        public async Task<IActionResult> AsignarLineaCredito(int id)
+        // GET: Asignar línea de crédito (HU3)
+        public async Task<IActionResult> AsignarLineaCredito()
         {
-            var cliente = await TryGetClienteAsync(id);
-            if (cliente == null)
-            {
-                TempData["Error"] = "Cliente no encontrado.";
-                return RedirectToAction("Dashboard");
-            }
+            var clientes = await _db.Clientes
+                .Select(c => new { c.Id, c.Nombre })
+                .ToListAsync();
 
-            if (cliente.LineaCredito != null)
-            {
-                TempData["Error"] = "Este cliente ya tiene una línea de crédito asignada.";
-                return RedirectToAction("Dashboard");
-            }
+            Console.WriteLine("Clientes encontrados (GET): " + clientes.Count);
 
-            var vm = new AsignacionLineaCreditoViewModel
-            {
-                ClienteId = cliente.Id,
-                NombreCliente = cliente.Nombre,
-                DeudaTotal = cliente.DeudaTotal,
-                IngresosMensuales = cliente.IngresosMensuales
-            };
-
-            return View(vm);
+            ViewBag.Clientes = clientes;
+            return View();
         }
 
         // POST: Asignar línea de crédito (HU3)
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AsignarLineaCredito(AsignacionLineaCreditoViewModel model)
+        public async Task<IActionResult> AsignarLineaCredito(int clienteId, decimal monto)
         {
             if (!ModelState.IsValid)
-                return View(model);
+            {
+                var clientes = await _db.Clientes
+                    .Select(c => new { c.Id, c.Nombre })
+                    .ToListAsync();
+                ViewBag.Clientes = clientes;
+                return View();
+            }
 
-            var cliente = await TryGetClienteAsync(model.ClienteId);
+            if (monto < 180)
+            {
+                TempData["Error"] = "Debe ingresar un monto mayor a 180.";
+                return RedirectToAction("AsignarLineaCredito");
+            }
+
+            var cliente = await _db.Clientes
+                .Include(c => c.LineaCredito)
+                .FirstOrDefaultAsync(c => c.Id == clienteId);
             if (cliente == null)
             {
                 TempData["Error"] = "Cliente no válido.";
-                return RedirectToAction("Dashboard");
+                return RedirectToAction("AsignarLineaCredito");
             }
 
             if (cliente.LineaCredito != null)
             {
-                TempData["Error"] = "Este cliente ya tiene una línea de crédito asignada.";
-                return RedirectToAction("Dashboard");
+                TempData["Error"] = "El cliente ya tiene asignada una línea de crédito.";
+                return RedirectToAction("AsignarLineaCredito");
             }
-
-            if (model.MontoAsignado < 180)
-            {
-                ModelState.AddModelError("MontoAsignado", "El valor ingresado debe ser mayor que 180 soles.");
-                
-                model.NombreCliente = cliente.Nombre;
-                model.DeudaTotal = cliente.DeudaTotal;
-                model.IngresosMensuales = cliente.IngresosMensuales;
-                
-                return View(model);
-            }
-
-            var user = await _userManager.GetUserAsync(User);
 
             var linea = new LineaCredito
             {
                 ClienteId = cliente.Id,
-                Monto = model.MontoAsignado,
+                Monto = monto,
                 FechaAsignacion = DateTime.UtcNow,
-                UsuarioAsignador = user.FullName
+                UsuarioAsignador = User.Identity?.Name ?? "Supervisor"
             };
 
             _db.LineasCredito.Add(linea);
             await _db.SaveChangesAsync();
 
-            TempData["Success"] = $"Línea de crédito de S/ {model.MontoAsignado:N2} asignada exitosamente a {cliente.Nombre} por {user.FullName}.";
-            return RedirectToAction("Dashboard");
+            TempData["Success"] = $"Línea de crédito asignada a {cliente.Nombre}.";
+            return RedirectToAction("AsignarLineaCredito");
         }
-
         // HU1: Ver informe financiero detallado
         public async Task<IActionResult> VerInformeFinanciero(int id)
         {
