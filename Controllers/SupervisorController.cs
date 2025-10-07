@@ -149,7 +149,7 @@ namespace Audicob.Controllers
             }
 
             if (monto < 180)
-            {
+            { 
                 TempData["Error"] = "Debe ingresar un monto mayor a 180.";
                 return RedirectToAction("AsignarLineaCredito");
             }
