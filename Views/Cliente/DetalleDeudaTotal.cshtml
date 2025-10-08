@@ -1,0 +1,76 @@
+@model List<Audicob.Models.PagoPendiente>
+
+@{
+    ViewData["Title"] = "Detalle de Deuda Total";
+    decimal total = Model.Sum(d => d.Monto);
+}
+
+<h2>Detalle de Deuda Total</h2>
+
+<div class="alert alert-info">
+    <strong>Total de Deudas Pendientes:</strong> @total.ToString("C")
+</div>
+
+@if (Model != null && Model.Count > 0)
+{
+    <table class="table table-striped table-bordered">
+        <thead class="table-dark">
+            <tr>
+                <th>Descripción</th>
+                <th>Monto</th>
+                <th>Fecha de Vencimiento</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var deuda in Model)
+            {
+                <tr>
+                    <td>@deuda.Descripcion</td>
+                    <td>@deuda.Monto.ToString("C")</td>
+                    <td>@deuda.FechaVencimiento.ToShortDateString()</td>
+                    <td>
+                        <button class="btn btn-primary btn-sm" onclick="mostrarDetalle(@deuda.Id, this)">
+                            Detalle
+                        </button>
+                    </td>
+                </tr>
+                <tr class="detalle-row" style="display:none;">
+                    <td colspan="4" class="detalle-container"></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No tienes deudas pendientes 🎉</p>
+}
+
+@section Scripts {
+<script>
+    async function mostrarDetalle(id, boton) {
+        const fila = boton.closest('tr').nextElementSibling;
+        const contenedor = fila.querySelector('.detalle-container');
+
+        // Si ya está visible, lo ocultamos
+        if (fila.style.display === 'table-row') {
+            fila.style.display = 'none';
+            contenedor.innerHTML = '';
+            return;
+        }
+
+        // Obtener el contenido del detalle desde el controlador
+        const response = await fetch(`/Cliente/DetallePago?id=${id}`);
+        if (!response.ok) {
+            contenedor.innerHTML = '<div class="text-danger">No se pudo cargar el detalle.</div>';
+            fila.style.display = 'table-row';
+            return;
+        }
+
+        const html = await response.text();
+        contenedor.innerHTML = html;
+        fila.style.display = 'table-row';
+    }
+</script>
+}

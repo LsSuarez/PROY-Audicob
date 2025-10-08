@@ -17,6 +17,7 @@ namespace Audicob.Models
         public ICollection<Pago> Pagos { get; set; } = new List<Pago>();
         public LineaCredito? LineaCredito { get; set; }
         public ICollection<EvaluacionCliente> Evaluaciones { get; set; } = new List<EvaluacionCliente>();
+        public ICollection<PagoPendiente> PagosPendientes { get; set; }
         public AsignacionAsesor? AsignacionAsesor { get; set; }
         public Deuda? Deuda { get; set; }
     }

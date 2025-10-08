@@ -37,20 +37,28 @@
                             <a class="nav-link" asp-controller="Home" asp-action="Privacy">Privacidad</a>
                         </li>
                           @using Microsoft.AspNetCore.Identity
-@inject SignInManager<ApplicationUser> SignInManager
+                        @inject SignInManager<ApplicationUser> SignInManager
 
-@if (SignInManager.IsSignedIn(User))
-{
-    @* Solo si hay sesión iniciada *@
-    @if (User.IsInRole("Supervisor"))
-    {
-        <li class="nav-item">
-            <a class="nav-link" asp-controller="ClienteBusqueda" asp-action="Index">
-                Evaluar situación financiera
-            </a>
-        </li>
-    }
-}
+                        @if (SignInManager.IsSignedIn(User))
+                        {
+                            @* Solo si hay sesión iniciada *@
+                            @if (User.IsInRole("Cliente"))
+                            {
+                                 <li class="nav-item">
+                                     <a class="nav-link" asp-controller="Cliente" asp-action="DetalleDeudaTotal">
+                                        Deudas
+                                    </a>
+                                </li>
+                            }                                             
+                            @if (User.IsInRole("Supervisor"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="ClienteBusqueda" asp-action="Index">
+                                        Evaluar situación financiera
+                                    </a>
+                                </li>
+                            }
+                        }
                     </ul>
                     <partial name="_LoginPartial" />
                 </div>
