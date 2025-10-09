@@ -9,6 +9,13 @@ namespace Audicob.Models
         public decimal DeudaTotal { get; set; }
         public DateTime FechaActualizacion { get; set; } = DateTime.UtcNow;
 
+        public string EstadoAdmin { get; set; } // "Aceptado" o "Rechazado"
+        public string MotivoAdmin { get; set; }
+        public DateTime? FechaDecisionAdmin { get; set; }
+
+        public string Estado { get; set; } = "Pendiente"; // Pendiente, Aceptado, Rechazado
+        public string UsuarioSupervisor { get; set; } = string.Empty;
+
         // Relación con ApplicationUser
         public string? UserId { get; set; }
         public ApplicationUser? Usuario { get; set; }

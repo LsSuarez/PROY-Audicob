@@ -1,0 +1,38 @@
+@model List<Audicob.Models.Cliente>
+@{
+    ViewData["Title"] = "Clientes Aceptados por Administrador";
+}
+
+<h2 class="mb-4">Clientes Aceptados por Administrador</h2>
+
+<table class="table table-bordered table-striped">
+    <thead class="table-light">
+        <tr>
+            <th>Documento</th>
+            <th>Nombre</th>
+            <th>Ingresos Mensuales</th>
+            <th>Deuda Total</th>
+            <th>Supervisor</th>
+            <th>Fecha Actualización</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach(var cliente in Model)
+        {
+            <tr>
+                <td>@cliente.Documento</td>
+                <td>@cliente.Nombre</td>
+                <td>@cliente.IngresosMensuales.ToString("C")</td>
+                <td>@cliente.DeudaTotal.ToString("C")</td>
+                <td>@cliente.UsuarioSupervisor</td>
+                <td>@cliente.FechaActualizacion.ToLocalTime().ToString("dd/MM/yyyy")</td>
+                <td>
+                    <a asp-action="Detalle" asp-route-id="@cliente.Id" class="btn btn-primary btn-sm">
+                        Detalle
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

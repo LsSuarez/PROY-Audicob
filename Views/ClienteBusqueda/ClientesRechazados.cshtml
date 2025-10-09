@@ -1,0 +1,48 @@
+@model IEnumerable<Audicob.Models.Cliente>
+
+@{
+    ViewData["Title"] = "Clientes Rechazados por Admin";
+}
+
+<h2 class="mb-4 text-danger">Lista de Clientes Rechazados por el Administrador</h2>
+
+@if (Model == null || !Model.Any())
+{
+    <div class="alert alert-info">No hay clientes rechazados por el administrador.</div>
+}
+else
+{
+    <table class="table table-bordered table-hover">
+        <thead class="table-danger text-center">
+            <tr>
+                <th>Documento (DNI)</th>
+                <th>Nombre</th>
+                <th>Ingresos Mensuales</th>
+                <th>Deuda Total</th>
+                <th>Motivo de Rechazo (Admin)</th>
+                <th>Supervisor</th>
+                <th>Fecha de Actualización</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var cliente in Model)
+        {
+            <tr>
+                <td>@cliente.Documento</td>
+                <td>@cliente.Nombre</td>
+                <td class="text-end">@cliente.IngresosMensuales.ToString("C")</td>
+                <td class="text-end">@cliente.DeudaTotal.ToString("C")</td>
+                <td>@(string.IsNullOrWhiteSpace(cliente.MotivoAdmin) ? "No especificado" : cliente.MotivoAdmin)</td>
+                <td>@(string.IsNullOrWhiteSpace(cliente.UsuarioSupervisor) ? "No asignado" : cliente.UsuarioSupervisor)</td>
+                <td>@cliente.FechaActualizacion.ToLocalTime().ToString("dd/MM/yyyy")</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+<div class="mt-4">
+    <a asp-controller="ClienteBusqueda" asp-action="Index" class="btn btn-secondary">
+        ← Regresar a la búsqueda
+    </a>
+</div>

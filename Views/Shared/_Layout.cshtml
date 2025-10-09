@@ -42,6 +42,8 @@
 @if (SignInManager.IsSignedIn(User))
 {
     @* Solo si hay sesión iniciada *@
+    
+    @* Opciones para Supervisor *@
     @if (User.IsInRole("Supervisor"))
     {
         <li class="nav-item">
@@ -50,8 +52,18 @@
             </a>
         </li>
     }
+
+    @* Opciones para Administrador del Gerente *@
+    @if (User.IsInRole("Administrador"))
+    {
+        <li class="nav-item">
+            <a class="nav-link" asp-controller="ClienteGerente" asp-action="Index">
+                Confirmar evaluación revisada
+            </a>
+        </li>
+    }
 }
-                    </ul>
+                   </ul>
                     <partial name="_LoginPartial" />
                 </div>
             </div>
