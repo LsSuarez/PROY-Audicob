@@ -53,9 +53,10 @@ namespace Audicob.Data.Configurations
                 .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasOne(c => c.AsignacionAsesor)
-                .WithOne(a => a.Cliente)
-                .HasForeignKey<AsignacionAsesor>(a => a.ClienteId)
+                .WithMany(a => a.Clientes)
+                .HasForeignKey(c => c.AsignacionAsesorId)
                 .OnDelete(DeleteBehavior.Cascade);
+
         }
     }
 }

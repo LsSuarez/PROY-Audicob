@@ -29,35 +29,34 @@ namespace Audicob.Controllers
             {
                 var userId = User.Identity.Name;
 
-                // Obtener todas las asignaciones del asesor
                 var asignaciones = await _db.AsignacionesAsesores
-                    .Include(a => a.Cliente)
+                    .Include(a => a.Clientes)
+                    .ThenInclude(c => c.Deuda)
                     .Where(a => a.AsesorUserId == userId)
                     .ToListAsync();
 
-                // Filtrar clientes por nombre o documento
+                var clientes = asignaciones.SelectMany(a => a.Clientes).ToList();
+
                 if (!string.IsNullOrEmpty(searchTerm))
                 {
-                    asignaciones = asignaciones.Where(a =>
-                        a.Cliente.Nombre.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                        a.Cliente.Documento.Contains(searchTerm)).ToList();
+                    clientes = clientes.Where(c =>
+                        c.Nombre.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                        c.Documento.Contains(searchTerm)).ToList();
                 }
 
-                // Crear el modelo de vista
                 var vm = new CobranzaDashboardViewModel
                 {
                     SearchTerm = searchTerm,
-                    TotalClientesAsignados = asignaciones.Count,
-                    TotalDeudaCartera = asignaciones.Sum(a => a.Cliente.DeudaTotal),
-                    Clientes = asignaciones.Select(a => new ClienteDeudaViewModel
+                    TotalClientesAsignados = clientes.Count,
+                    TotalDeudaCartera = clientes.Sum(c => c.Deuda?.TotalAPagar ?? 0),
+                    Clientes = clientes.Select(c => new ClienteDeudaViewModel
                     {
-                        ClienteId = a.Cliente.Id,
-                        ClienteNombre = a.Cliente.Nombre,
-                        DeudaTotal = a.Cliente.DeudaTotal
+                        ClienteId = c.Id,
+                        ClienteNombre = c.Nombre,
+                        DeudaTotal = c.Deuda?.TotalAPagar ?? 0
                     }).ToList()
                 };
 
-                // Verificar si no hay resultados
                 vm.VerificarResultadosBusqueda();
 
                 return View(vm);
@@ -87,7 +86,7 @@ namespace Audicob.Controllers
                 var deuda = cliente.Deuda;
                 var diasDeAtraso = (DateTime.Now - deuda.FechaVencimiento).Days;
                 if (diasDeAtraso < 0) diasDeAtraso = 0; // No puede ser negativo
-                
+
                 var penalidadCalculada = CalcularPenalidad(deuda.Monto, diasDeAtraso);
 
                 var model = new DeudaDetalleViewModel
@@ -130,7 +129,7 @@ namespace Audicob.Controllers
                 var deuda = cliente.Deuda;
                 var diasDeAtraso = (DateTime.Now - deuda.FechaVencimiento).Days;
                 if (diasDeAtraso < 0) diasDeAtraso = 0;
-                
+
                 var penalidadCalculada = CalcularPenalidad(deuda.Monto, diasDeAtraso);
 
                 // Actualizar penalidad e intereses
@@ -169,7 +168,7 @@ namespace Audicob.Controllers
                 var deuda = cliente.Deuda;
                 var diasDeAtraso = (DateTime.Now - deuda.FechaVencimiento).Days;
                 if (diasDeAtraso < 0) diasDeAtraso = 0;
-                
+
                 var tasaMensual = 0.015m; // 1.5% mensual
                 var tasaDiaria = tasaMensual / 30;
                 var penalidadCalculada = deuda.Monto * tasaDiaria * diasDeAtraso;
@@ -184,7 +183,7 @@ namespace Audicob.Controllers
                     TasaPenalidadDiaria = tasaDiaria,
                     PenalidadCalculada = penalidadCalculada,
                     TotalAPagar = deuda.Monto + penalidadCalculada,
-                    
+
                     // Fórmula paso a paso
                     FormulaTexto = "Penalidad = Monto Original × Tasa Diaria × Días de Atraso",
                     Paso1 = $"Tasa Mensual = {tasaMensual:P2} (1.5%)",
@@ -221,7 +220,7 @@ namespace Audicob.Controllers
                 var deuda = cliente.Deuda;
                 var diasDeAtraso = (DateTime.Now - deuda.FechaVencimiento).Days;
                 if (diasDeAtraso < 0) diasDeAtraso = 0;
-                
+
                 var penalidadCalculada = CalcularPenalidad(deuda.Monto, diasDeAtraso);
 
                 var model = new ComprobanteDeudaViewModel
@@ -251,7 +250,7 @@ namespace Audicob.Controllers
         private decimal CalcularPenalidad(decimal monto, int diasDeAtraso)
         {
             if (diasDeAtraso <= 0) return 0;
-            
+
             decimal tasaPenalidadMensual = 0.015m; // 1.5% mensual
             decimal tasaPenalidadDiaria = tasaPenalidadMensual / 30;
             return monto * tasaPenalidadDiaria * diasDeAtraso;

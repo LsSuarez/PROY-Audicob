@@ -11,7 +11,8 @@
         </div>
 
         <form method="get" asp-action="Index" class="mb-3">
-            <input type="text" name="filtro" value="@Model.Filtro" class="form-control" placeholder="Buscar por nombre o DNI" />
+            <input type="text" name="filtro" value="@Model.Filtro" class="form-control"
+                placeholder="Buscar por nombre o DNI" />
             <button type="submit" class="btn btn-primary mt-2">Buscar</button>
         </form>
 
@@ -37,8 +38,12 @@
                                 <td>@item.Nombre</td>
                                 <td>@item.DeudaTotal.ToString("C")</td>
                                 <td>
-                                    <button class="btn btn-outline-primary">Ver Detalles</button>
+                                    <button class="btn btn-primary" onclick="mostrarAsignacion(@item.Id)">
+                                        Asignar
+                                    </button>
                                 </td>
+
+
                             </tr>
                         }
                     }
@@ -53,3 +58,16 @@
         </div>
     </div>
 </div>
+
+<div id="asignacionContainer" class="mt-4"></div>
+
+@section Scripts {
+    <script>
+        function mostrarAsignacion(clienteId) {
+            $.get("/AsigSupervisor/Asignar/" + clienteId, function (data) {
+                $("#asignacionContainer").html(data);
+            });
+
+        }
+    </script>
+}

@@ -36,5 +36,40 @@ namespace Audicob.Controllers
 
             return View(model);
         }
+
+        //Asignación de Cliente
+        public IActionResult Asignar(int id)
+        {
+            var cliente = _context.Clientes.FirstOrDefault(c => c.Id == id);
+            if (cliente == null) return NotFound();
+
+            var asesores = _context.AsignacionesAsesores.ToList();
+
+            ViewBag.ClienteId = id;
+            ViewBag.ClienteNombre = cliente.Nombre;
+
+            return PartialView("_AsignarAsesorPartial", asesores);
+        }
+
+
+        [HttpPost]
+        public IActionResult GuardarAsignacion(int clienteId, int asesorId)
+        {
+            var cliente = _context.Clientes.FirstOrDefault(c => c.Id == clienteId);
+            var asesor = _context.AsignacionesAsesores.FirstOrDefault(a => a.Id == asesorId);
+
+            if (cliente == null || asesor == null)
+                return NotFound();
+
+            cliente.AsignacionAsesor = asesor;
+            _context.SaveChanges();
+
+            var lista = _context.AsignacionesAsesores
+                .Include(a => a.Clientes)
+                .ToList();
+
+            return PartialView("_TablaAsignacionesPartial", lista);
+        }
+
     }
 }

@@ -1,0 +1,47 @@
+@model IEnumerable<Audicob.Models.AsignacionAsesor>
+@{
+    var clienteId = ViewBag.ClienteId;
+    var clienteNombre = ViewBag.ClienteNombre;
+}
+
+<div class="card border-primary mb-3">
+    <div class="card-header bg-primary text-white">
+        Asignar asesor al cliente: <strong>@clienteNombre</strong>
+    </div>
+    <div class="card-body">
+        <form id="formAsignar">
+            <input type="hidden" name="clienteId" value="@clienteId" />
+
+            <div class="mb-3">
+                <label for="asesorId" class="form-label">Selecciona un Asesor:</label>
+                <select class="form-select" name="asesorId" id="asesorId">
+                    <option value="">-- Seleccione --</option>
+                    @foreach (var asesor in Model)
+                    {
+                        <option value="@asesor.Id">@asesor.AsesorNombre</option>
+                    }
+                </select>
+            </div>
+
+            <button type="button" class="btn btn-success" id="btnGuardarAsignacion">
+                Asignar
+            </button>
+        </form>
+
+        <div id="tablaAsignacionesContainer" class="mt-4"></div>
+    </div>
+</div>
+
+<script>
+    $("#btnGuardarAsignacion").click(function () {
+        var data = $("#formAsignar").serialize();
+        console.log("Enviando datos:", data); // ✅ Verifica que se ejecuta
+
+        $.post("/AsigSupervisor/GuardarAsignacion", data, function (result) {
+            $("#tablaAsignacionesContainer").html(result);
+            console.log("Respuesta recibida, actualizando tabla...");
+        }).fail(function (xhr) {
+            console.error("Error en la asignación:", xhr.responseText);
+        });
+    });
+</script>

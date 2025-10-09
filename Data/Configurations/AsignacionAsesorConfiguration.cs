@@ -23,11 +23,12 @@ namespace Audicob.Data.Configurations
             builder.Property(a => a.FechaAsignacion)
                 .IsRequired();
 
-            // Relación: Asignación tiene un Cliente
-            builder.HasOne(a => a.Cliente)
+            // Relación: Asesor tiene muchos Clientes
+            builder.HasMany(a => a.Clientes)
                 .WithOne(c => c.AsignacionAsesor)
-                .HasForeignKey<AsignacionAsesor>(a => a.ClienteId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey(c => c.AsignacionAsesorId)
+                .OnDelete(DeleteBehavior.SetNull);
+
         }
     }
 }

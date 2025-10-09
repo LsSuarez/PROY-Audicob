@@ -56,6 +56,14 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXNpZ1N1cGVydmlzb3IvSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
+[/workspaces/PROY-Audicob/Views/AsigSupervisor/_AsignarAsesorPartial.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXNpZ1N1cGVydmlzb3IvX0FzaWduYXJBc2Vzb3JQYXJ0aWFsLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/workspaces/PROY-Audicob/Views/AsigSupervisor/_TablaAsignacionesPartial.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXNpZ1N1cGVydmlzb3IvX1RhYmxhQXNpZ25hY2lvbmVzUGFydGlhbC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [/workspaces/PROY-Audicob/Views/Cliente/Dashboard.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQ2xpZW50ZS9EYXNoYm9hcmQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
