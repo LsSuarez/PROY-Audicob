@@ -1,0 +1,33 @@
+@model List<Audicob.Models.Cliente>
+
+<h2>Clientes Aceptados</h2>
+
+<table class="table table-bordered mt-2">
+    <thead class="table-light">
+        <tr>
+            <th>Documento</th>
+            <th>Nombre</th>
+            <th>Ingresos Mensuales</th>
+            <th>Deuda Total</th>
+            <th>Supervisor</th>
+            <th>Fecha Actualización</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+   @foreach(var cliente in Model.Where(c => c.Estado == "Aceptado"))
+    {
+        <tr>
+            <td>@cliente.Documento</td>
+            <td>@cliente.Nombre</td>
+            <td>@cliente.IngresosMensuales.ToString("C")</td>
+            <td>@cliente.DeudaTotal.ToString("C")</td>
+            <td>@cliente.UsuarioSupervisor</td>
+            <td>@cliente.FechaActualizacion.ToLocalTime().ToString("dd/MM/yyyy")</td>
+            <td>
+                <a asp-action="Detalle" asp-route-id="@cliente.Id" class="btn btn-primary btn-sm">Detalle</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

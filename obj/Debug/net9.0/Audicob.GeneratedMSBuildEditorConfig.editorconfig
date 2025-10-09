@@ -52,8 +52,28 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQXNlc29yXERhc2hib2FyZC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/abel_/Downloads/de0/PROY-Audicob/Views/ClienteBusqueda/ClientesRechazados.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2xpZW50ZUJ1c3F1ZWRhXENsaWVudGVzUmVjaGF6YWRvcy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/abel_/Downloads/de0/PROY-Audicob/Views/ClienteBusqueda/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2xpZW50ZUJ1c3F1ZWRhXEluZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/abel_/Downloads/de0/PROY-Audicob/Views/ClienteGerente/ClientesAceptados.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2xpZW50ZUdlcmVudGVcQ2xpZW50ZXNBY2VwdGFkb3MuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/abel_/Downloads/de0/PROY-Audicob/Views/ClienteGerente/ClientesAceptadosAdmin.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2xpZW50ZUdlcmVudGVcQ2xpZW50ZXNBY2VwdGFkb3NBZG1pbi5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/abel_/Downloads/de0/PROY-Audicob/Views/ClienteGerente/Detalle.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2xpZW50ZUdlcmVudGVcRGV0YWxsZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/abel_/Downloads/de0/PROY-Audicob/Views/ClienteGerente/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2xpZW50ZUdlcmVudGVcSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/abel_/Downloads/de0/PROY-Audicob/Views/Cliente/Dashboard.cshtml]

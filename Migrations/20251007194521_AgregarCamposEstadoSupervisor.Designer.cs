@@ -3,6 +3,7 @@ using System;
 using Audicob.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Audicob.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251007194521_AgregarCamposEstadoSupervisor")]
+    partial class AgregarCamposEstadoSupervisor
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -158,22 +161,11 @@ namespace Audicob.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("EstadoAdmin")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<DateTime>("FechaActualizacion")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("FechaDecisionAdmin")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<decimal>("IngresosMensuales")
                         .HasColumnType("numeric(18,2)");
-
-                    b.Property<string>("MotivoAdmin")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
@@ -331,34 +323,6 @@ namespace Audicob.Migrations
                     b.HasIndex("ClienteId");
 
                     b.ToTable("Pagos", (string)null);
-                });
-
-            modelBuilder.Entity("Audicob.Models.PagoPendiente", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int?>("ClienteId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Descripcion")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("FechaVencimiento")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<decimal>("Monto")
-                        .HasColumnType("numeric");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ClienteId");
-
-                    b.ToTable("PagoPendiente");
                 });
 
             modelBuilder.Entity("Audicob.Models.Transaccion", b =>
@@ -602,13 +566,6 @@ namespace Audicob.Migrations
                     b.Navigation("Cliente");
                 });
 
-            modelBuilder.Entity("Audicob.Models.PagoPendiente", b =>
-                {
-                    b.HasOne("Audicob.Models.Cliente", null)
-                        .WithMany("PagosPendientes")
-                        .HasForeignKey("ClienteId");
-                });
-
             modelBuilder.Entity("Audicob.Models.Transaccion", b =>
                 {
                     b.HasOne("Audicob.Models.Cliente", "Cliente")
@@ -687,8 +644,6 @@ namespace Audicob.Migrations
                     b.Navigation("LineaCredito");
 
                     b.Navigation("Pagos");
-
-                    b.Navigation("PagosPendientes");
                 });
 #pragma warning restore 612, 618
         }
