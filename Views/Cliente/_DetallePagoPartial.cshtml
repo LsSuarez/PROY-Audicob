@@ -1,0 +1,9 @@
+@model Audicob.Models.PagoPendiente
+
+<div class="border rounded p-3 mt-2 bg-light">
+    <h5>Detalle de Boleta</h5>
+    <p><strong>Descripción:</strong> @Model.Descripcion</p>
+    <p><strong>Monto:</strong> S/ @Model.Monto</p>
+    <p><strong>Fecha de Vencimiento:</strong> @Model.FechaVencimiento.ToString("dd/MM/yyyy")</p>
+    <p><strong>Estado:</strong> Pendiente de pago</p>
+</div>

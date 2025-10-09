@@ -17,15 +17,18 @@ namespace Audicob.Data
         public DbSet<LineaCredito> LineasCredito { get; set; }
         public DbSet<EvaluacionCliente> Evaluaciones { get; set; }
         public DbSet<AsignacionAsesor> AsignacionesAsesores { get; set; }
+        public DbSet<PagoPendiente> PagoPendiente { get; set; }
         public DbSet<Transaccion> Transacciones { get; set; }
         public DbSet<Deuda> Deudas { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<PagoPendiente>().ToTable("PagoPendiente");
 
             // Configuración explícita de la relación ApplicationUser <-> Cliente
             modelBuilder.Entity<ApplicationUser>()
+                
                 .HasOne(u => u.Cliente)
                 .WithOne(c => c.Usuario)
                 .HasForeignKey<Cliente>(c => c.UserId)
