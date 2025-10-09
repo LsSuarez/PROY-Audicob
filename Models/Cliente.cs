@@ -27,5 +27,6 @@ namespace Audicob.Models
         public ICollection<PagoPendiente> PagosPendientes { get; set; }
         public AsignacionAsesor? AsignacionAsesor { get; set; }
         public Deuda? Deuda { get; set; }
+
     }
 }

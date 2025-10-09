@@ -1,0 +1,55 @@
+@model Audicob.Models.ViewModels.Cliente.ClienteDashboardViewModel
+
+@{
+    ViewData["Title"] = "Segmentar Clientes - Supervisor";
+}
+
+<div id="content" class="content">
+    <div class="seccion-contenido">
+        <div class="seccion-encabezado">
+            <h2 class="seccion-titulo">Lista de Clientes Sin Asignar</h2>
+        </div>
+
+        <form method="get" asp-action="Index" class="mb-3">
+            <input type="text" name="filtro" value="@Model.Filtro" class="form-control" placeholder="Buscar por nombre o DNI" />
+            <button type="submit" class="btn btn-primary mt-2">Buscar</button>
+        </form>
+
+        <div class="contenedor-tabla mt-3">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>DNI</th>
+                        <th>Nombre</th>
+                        <th>Deuda Total</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.ListCliente != null && Model.ListCliente.Any())
+                    {
+                        foreach (var item in Model.ListCliente)
+                        {
+                            <tr>
+                                <td>@item.Id</td>
+                                <td>@item.Documento</td>
+                                <td>@item.Nombre</td>
+                                <td>@item.DeudaTotal.ToString("C")</td>
+                                <td>
+                                    <button class="btn btn-outline-primary">Ver Detalles</button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center">No se encontraron clientes sin asignar.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
