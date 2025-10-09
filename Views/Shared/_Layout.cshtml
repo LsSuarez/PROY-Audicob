@@ -10,9 +10,9 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
 
-
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+    
     <!-- Estilos personalizados -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/Audicob.styles.css" asp-append-version="true" />
@@ -36,34 +36,44 @@
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="Home" asp-action="Privacy">Privacidad</a>
                         </li>
-                          @using Microsoft.AspNetCore.Identity
-@inject SignInManager<ApplicationUser> SignInManager
 
-@if (SignInManager.IsSignedIn(User))
-{
-    @* Solo si hay sesión iniciada *@
-    
-    @* Opciones para Supervisor *@
-    @if (User.IsInRole("Supervisor"))
-    {
-        <li class="nav-item">
-            <a class="nav-link" asp-controller="ClienteBusqueda" asp-action="Index">
-                Evaluar situación financiera
-            </a>
-        </li>
-    }
+                        @using Microsoft.AspNetCore.Identity
+                        @inject SignInManager<ApplicationUser> SignInManager
 
-    @* Opciones para Administrador del Gerente *@
-    @if (User.IsInRole("Administrador"))
-    {
-        <li class="nav-item">
-            <a class="nav-link" asp-controller="ClienteGerente" asp-action="Index">
-                Confirmar evaluación revisada
-            </a>
-        </li>
-    }
-}
-                   </ul>
+                        @if (SignInManager.IsSignedIn(User))
+                        {
+                            @* --- Opciones para CLIENTE --- *@
+                            @if (User.IsInRole("Cliente"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Cliente" asp-action="DetalleDeudaTotal">
+                                        Deudas
+                                    </a>
+                                </li>
+                            }
+
+                            @* --- Opciones para SUPERVISOR --- *@
+                            @if (User.IsInRole("Supervisor"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="ClienteBusqueda" asp-action="Index">
+                                        Evaluar situación financiera
+                                    </a>
+                                </li>
+                            }
+
+                            @* --- Opciones para ADMINISTRADOR (GERENTE) --- *@
+                            @if (User.IsInRole("Administrador"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="ClienteGerente" asp-action="Index">
+                                        Confirmar evaluación revisada
+                                    </a>
+                                </li>
+                            }
+                        }
+                    </ul>
+
                     <partial name="_LoginPartial" />
                 </div>
             </div>
@@ -94,7 +104,8 @@
 
     <footer class="bg-light border-top py-3 mt-auto">
         <div class="container text-center text-muted small">
-            &copy; 2025 - AUDICOB ERP | <a asp-controller="Home" asp-action="Privacy">Política de Privacidad</a>
+            &copy; 2025 - AUDICOB ERP | 
+            <a asp-controller="Home" asp-action="Privacy">Política de Privacidad</a>
         </div>
     </footer>
 
