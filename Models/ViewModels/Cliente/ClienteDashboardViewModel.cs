@@ -16,6 +16,10 @@ namespace Audicob.Models.ViewModels.Cliente
 
         // Evaluaciones
         public List<EvaluacionResumen> Evaluaciones { get; set; } = new();
+        
+        // Asignar Asesor
+        public string? Filtro { get; set; }
+        public IEnumerable<Audicob.Models.Cliente>? ListCliente { get; set; }
     }
 
     public class PagoResumen

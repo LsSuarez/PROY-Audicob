@@ -24,23 +24,27 @@ namespace Audicob.Controllers
         {
             var user = await _userManager.GetUserAsync(User);
             var asignaciones = await _db.AsignacionesAsesores
-                .Include(a => a.Cliente)
+                .Include(a => a.Clientes)
+                .ThenInclude(c => c.Deuda)
                 .Where(a => a.AsesorUserId == user.Id)
                 .ToListAsync();
 
+            var clientes = asignaciones.SelectMany(a => a.Clientes).ToList();
+
             var vm = new AsesorDashboardViewModel
             {
-                TotalClientesAsignados = asignaciones.Count,
-                TotalDeudaCartera = asignaciones.Sum(a => a.Cliente.DeudaTotal),
+                TotalClientesAsignados = clientes.Count,
+                TotalDeudaCartera = clientes.Sum(c => c.Deuda?.TotalAPagar ?? 0),
                 TotalPagosRecientes = await _db.Pagos
-                    .Where(p => asignaciones.Select(a => a.ClienteId).Contains(p.ClienteId) &&
+                    .Where(p => clientes.Select(c => c.Id).Contains(p.ClienteId) &&
                                 p.Fecha >= DateTime.UtcNow.AddMonths(-1))
                     .SumAsync(p => p.Monto),
-                Clientes = asignaciones.Select(a => a.Cliente.Nombre).ToList(),
-                DeudasPorCliente = asignaciones.Select(a => a.Cliente.DeudaTotal).ToList()
+                Clientes = clientes.Select(c => c.Nombre).ToList(),
+                DeudasPorCliente = clientes.Select(c => c.Deuda?.TotalAPagar ?? 0).ToList()
             };
 
             return View(vm);
         }
+
     }
 }

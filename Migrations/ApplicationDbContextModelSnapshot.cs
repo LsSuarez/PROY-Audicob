@@ -124,16 +124,10 @@ namespace Audicob.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<int>("ClienteId")
-                        .HasColumnType("integer");
-
                     b.Property<DateTime>("FechaAsignacion")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ClienteId")
-                        .IsUnique();
 
                     b.ToTable("AsignacionesAsesores", (string)null);
                 });
@@ -145,6 +139,9 @@ namespace Audicob.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("AsignacionAsesorId")
+                        .HasColumnType("integer");
 
                     b.Property<decimal>("DeudaTotal")
                         .HasColumnType("numeric(18,2)");
@@ -189,6 +186,8 @@ namespace Audicob.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AsignacionAsesorId");
 
                     b.HasIndex("UserId")
                         .IsUnique();
@@ -358,7 +357,7 @@ namespace Audicob.Migrations
 
                     b.HasIndex("ClienteId");
 
-                    b.ToTable("PagoPendiente");
+                    b.ToTable("PagoPendiente", (string)null);
                 });
 
             modelBuilder.Entity("Audicob.Models.Transaccion", b =>
@@ -537,23 +536,19 @@ namespace Audicob.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("Audicob.Models.AsignacionAsesor", b =>
-                {
-                    b.HasOne("Audicob.Models.Cliente", "Cliente")
-                        .WithOne("AsignacionAsesor")
-                        .HasForeignKey("Audicob.Models.AsignacionAsesor", "ClienteId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Cliente");
-                });
-
             modelBuilder.Entity("Audicob.Models.Cliente", b =>
                 {
+                    b.HasOne("Audicob.Models.AsignacionAsesor", "AsignacionAsesor")
+                        .WithMany("Clientes")
+                        .HasForeignKey("AsignacionAsesorId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("Audicob.Models.ApplicationUser", "Usuario")
                         .WithOne("Cliente")
                         .HasForeignKey("Audicob.Models.Cliente", "UserId")
                         .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("AsignacionAsesor");
 
                     b.Navigation("Usuario");
                 });
@@ -676,10 +671,13 @@ namespace Audicob.Migrations
                     b.Navigation("Cliente");
                 });
 
+            modelBuilder.Entity("Audicob.Models.AsignacionAsesor", b =>
+                {
+                    b.Navigation("Clientes");
+                });
+
             modelBuilder.Entity("Audicob.Models.Cliente", b =>
                 {
-                    b.Navigation("AsignacionAsesor");
-
                     b.Navigation("Deuda");
 
                     b.Navigation("Evaluaciones");

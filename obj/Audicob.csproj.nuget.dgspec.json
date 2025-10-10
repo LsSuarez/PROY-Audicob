@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\abel_\\Downloads\\de0\\PROY-Audicob\\Audicob.csproj": {}
+    "/workspaces/PROY-Audicob/Audicob.csproj": {}
   },
   "projects": {
-    "C:\\Users\\abel_\\Downloads\\de0\\PROY-Audicob\\Audicob.csproj": {
+    "/workspaces/PROY-Audicob/Audicob.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\abel_\\Downloads\\de0\\PROY-Audicob\\Audicob.csproj",
+        "projectUniqueName": "/workspaces/PROY-Audicob/Audicob.csproj",
         "projectName": "Audicob",
-        "projectPath": "C:\\Users\\abel_\\Downloads\\de0\\PROY-Audicob\\Audicob.csproj",
-        "packagesPath": "C:\\Users\\abel_\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\abel_\\Downloads\\de0\\PROY-Audicob\\obj\\",
+        "projectPath": "/workspaces/PROY-Audicob/Audicob.csproj",
+        "packagesPath": "/home/codespace/.nuget/packages/",
+        "outputPath": "/workspaces/PROY-Audicob/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\abel_\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "/home/codespace/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net9.0"
@@ -36,9 +36,9 @@
         "restoreAuditProperties": {
           "enableAudit": "true",
           "auditLevel": "low",
-          "auditMode": "direct"
+          "auditMode": "all"
         },
-        "SdkAnalysisLevel": "9.0.300"
+        "SdkAnalysisLevel": "9.0.100"
       },
       "frameworks": {
         "net9.0": {
@@ -94,7 +94,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/9.0.100/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
