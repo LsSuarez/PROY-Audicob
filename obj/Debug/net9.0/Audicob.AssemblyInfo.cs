@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Audicob")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+00117ba96fda58219d60cf9a127ff31504c8a2a5")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6ed5a988ac9cef89b3cd496fe17beed6def03f88")]
 [assembly: System.Reflection.AssemblyProductAttribute("Audicob")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Audicob")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

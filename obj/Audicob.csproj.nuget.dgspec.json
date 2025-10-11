@@ -51,7 +51,7 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "dependencies": {
-            "DinkToPdf": {
+            "DinkToPdfIncludesDependencies": {
               "target": "Package",
               "version": "[1.0.8, )"
             },

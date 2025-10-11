@@ -5,6 +5,9 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>aspnet-Audicob-eb484ba7-8baf-4b5e-9a0e-fd0f57a6ad01</UserSecretsId>
+
+    <!-- IMPORTANTE: DinkToPdf usa binarios x64 -->
+    <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,7 +15,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DinkToPdf" Version="1.0.8" />
+    <!-- Paquete que incluye las dependencias nativas -->
+    <PackageReference Include="DinkToPdfIncludesDependencies" Version="1.0.8" />
+
+    <!-- EF / ASP.NET -->
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="9.0.4" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.9" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="9.0.4" />
@@ -22,7 +28,17 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
-    
   </ItemGroup>
+
+  <!-- Copia libwkhtmltox.dll del paquete NuGet a bin\... después del build -->
+  <Target Name="CopyWkhtmltoxToOutDir" AfterTargets="Build">
+    <ItemGroup>
+      <_WkhtmlLib Include="$(UserProfile)\.nuget\packages\dinktopdfincludesdependencies\1.0.8\**\libwkhtmltox.dll" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_WkhtmlLib)"
+          DestinationFolder="$(OutDir)"
+          SkipUnchangedFiles="true"
+          Condition="Exists('%(Identity)')" />
+  </Target>
 
 </Project>

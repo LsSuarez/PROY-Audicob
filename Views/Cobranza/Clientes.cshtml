@@ -1,0 +1,109 @@
+@model Audicob.Models.ViewModels.Cobranza.CobranzaDashboardViewModel
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Clientes (Cobranza)";
+
+    var q = (string?)Context.Request.Query["q"];
+    var st = (string?)Context.Request.Query["searchTerm"];
+    var term = !string.IsNullOrWhiteSpace(q) ? q : (!string.IsNullOrWhiteSpace(st) ? st : Model?.SearchTerm);
+    bool noResults = Model?.Clientes == null || !Model.Clientes.Any();
+
+    // volver aquí tras actualizar penalidad
+    var returnUrl = (string)(Context.Request.Path + Context.Request.QueryString);
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Cobranza – Clientes asignados</h2>
+    <a class="btn btn-outline-secondary btn-sm" asp-controller="Home" asp-action="Index">
+        <i class="bi bi-house"></i> Inicio
+    </a>
+</div>
+
+<form class="row g-2 mb-4" method="get" asp-controller="Cobranza" asp-action="Clientes">
+    <div class="col-md-7 col-lg-6">
+        <input name="q"
+               value="@(term ?? string.Empty)"
+               class="form-control"
+               autocomplete="off"
+               placeholder="Buscar por DNI o nombre…" />
+    </div>
+    <div class="col-md-3 col-lg-2">
+        <button class="btn btn-primary w-100" type="submit">
+            <i class="bi bi-search"></i> Buscar
+        </button>
+    </div>
+</form>
+
+@if (noResults)
+{
+    <div class="alert alert-warning">No se encontraron clientes para el criterio ingresado.</div>
+}
+else
+{
+    <div class="row g-3 mb-3">
+        <div class="col-12 col-lg-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Total clientes asignados</div>
+                    <div class="fs-4 fw-bold">@Model!.TotalClientesAsignados</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-lg-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Deuda total cartera</div>
+                    <div class="fs-4 fw-bold">S/ @Model!.TotalDeudaCartera.ToString("N2")</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Cliente</th>
+                    <th class="text-end">Deuda Total</th>
+                    <th class="text-center" style="width: 360px;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var c in Model!.Clientes!)
+            {
+                <tr>
+                    <td>@c.ClienteNombre</td>
+                    <td class="text-end">S/ @c.DeudaTotal.ToString("N2")</td>
+                    <td class="text-center">
+                        <a class="btn btn-sm btn-outline-primary me-1"
+                           asp-controller="Cobranza"
+                           asp-action="ConsultarDeuda"
+                           asp-route-clienteId="@c.ClienteId">
+                            <i class="bi bi-file-text"></i> Ver deuda
+                        </a>
+
+                        <a class="btn btn-sm btn-outline-secondary me-1"
+                           asp-controller="Cobranza"
+                           asp-action="VerDetallesCalculados"
+                           asp-route-clienteId="@c.ClienteId">
+                            <i class="bi bi-calculator"></i> Detalle cálculo
+                        </a>
+
+                        <form asp-controller="Cobranza"
+                              asp-action="ActualizarPenalidad"
+                              method="post"
+                              class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="clienteId" value="@c.ClienteId" />
+                            <input type="hidden" name="returnUrl" value="@returnUrl" />
+                            <button type="submit" class="btn btn-sm btn-success">
+                                <i class="bi bi-arrow-clockwise"></i> Actualizar
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}

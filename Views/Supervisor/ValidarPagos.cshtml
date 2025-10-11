@@ -1,0 +1,125 @@
+@model IEnumerable<Audicob.Models.ViewModels.Cobranza.PagoValidacionViewModel>
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Validar Pagos | AUDICOB ERP";
+}
+
+<div class="container mt-4">
+    <!-- Encabezado -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-primary">
+            <i class="bi bi-cash-coin"></i> Validación de Pagos
+        </h2>
+        <a asp-action="Dashboard" class="btn btn-outline-secondary shadow-sm">
+            <i class="bi bi-arrow-left"></i> Volver al Dashboard
+        </a>
+    </div>
+
+    <!-- Criterios de aceptación -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-primary text-white fw-bold">
+            <i class="bi bi-clipboard-check"></i> Criterios de Aceptación – HU 22
+        </div>
+        <div class="card-body bg-light">
+            <ul class="mb-0">
+                <li><strong>1️⃣</strong> DADO QUE el cliente haya realizado el pago, CUANDO seleccione <strong>“Estado”</strong>, ENTONCES se muestra el pago como <span class="badge bg-success">CANCELADO</span>.</li>
+                <li><strong>2️⃣</strong> DADO QUE el cliente no haya realizado el pago, CUANDO seleccione <strong>“Estado”</strong>, ENTONCES se muestra el pago como <span class="badge bg-warning text-dark">PENDIENTE</span>.</li>
+                <li><strong>3️⃣</strong> DADO QUE se vea el pago <strong>cancelado</strong>, CUANDO seleccione <strong>“Validar”</strong>, ENTONCES se actualizará el estado de cuenta del cliente.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Mensajes -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success shadow-sm"><i class="bi bi-check-circle-fill"></i> @TempData["Success"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger shadow-sm"><i class="bi bi-exclamation-triangle-fill"></i> @TempData["Error"]</div>
+    }
+
+    <!-- Tabla de pagos -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-secondary text-white fw-semibold">
+            <i class="bi bi-list-ul"></i> Pagos Registrados
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped align-middle mb-0">
+                    <thead class="table-light text-center">
+                        <tr>
+                            <th>Cliente</th>
+                            <th>Fecha</th>
+                            <th>Monto</th>
+                            <th>Estado</th>
+                            <th>Validado</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Any())
+                        {
+                            @foreach (var p in Model)
+                            {
+                                <tr class="text-center">
+                                    <td class="text-start fw-semibold">@p.ClienteNombre</td>
+                                    <td>@p.Fecha.ToString("dd/MM/yyyy")</td>
+                                    <td>S/ @p.Monto.ToString("N2")</td>
+
+                                    <!-- Estado visual -->
+                                    <td>
+                                        <span class="badge @(p.Estado == "Cancelado" ? "bg-success" : "bg-warning text-dark") px-3 py-2">
+                                            @p.Estado
+                                        </span>
+                                    </td>
+
+                                    <!-- Validado -->
+                                    <td>@(p.Validado ? "✔️ Sí" : "❌ No")</td>
+
+                                    <!-- Botón de acción -->
+                                    <td>
+                                        <form asp-action="CambiarEstadoPago" asp-controller="Supervisor" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@p.PagoId" />
+                                            <input type="hidden" name="nuevoEstado" value="@(p.Estado == "Pendiente" ? "Cancelado" : "Pendiente")" />
+
+                                            <button type="submit"
+                                                    class="btn btn-sm @(p.Estado == "Pendiente" ? "btn-success" : "btn-outline-warning") shadow-sm"
+                                                    @(p.Validado ? "disabled" : "")
+                                                    data-bs-toggle="tooltip"
+                                                    title="@(p.Estado == "Pendiente" ? "Marcar como Cancelado" : "Revertir a Pendiente")">
+                                                <i class="@(p.Estado == "Pendiente" ? "bi bi-check-circle-fill" : "bi bi-arrow-counterclockwise")"></i>
+                                                @(p.Estado == "Pendiente" ? "Validar" : "Pendiente")
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4">
+                                    <i class="bi bi-info-circle"></i> No hay pagos registrados para validar.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tooltip Bootstrap -->
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+    </script>
+}

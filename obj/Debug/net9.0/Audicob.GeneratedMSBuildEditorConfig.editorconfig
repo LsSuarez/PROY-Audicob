@@ -64,12 +64,16 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2xpZW50ZVxWZXJDb21wcm9iYW50ZS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/Audicob/Views/Cobranza/Cliente.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ29icmFuemFcQ2xpZW50ZS5jc2h0bWw=
+[D:/Audicob/Views/Cobranza/Clientes.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ29icmFuemFcQ2xpZW50ZXMuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
 [D:/Audicob/Views/Cobranza/ComprobanteDeuda.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ29icmFuemFcQ29tcHJvYmFudGVEZXVkYS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Audicob/Views/Cobranza/ConsultarDeuda.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ29icmFuemFcQ29uc3VsdGFyRGV1ZGEuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
 [D:/Audicob/Views/Cobranza/Dashboard.cshtml]
@@ -120,8 +124,8 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3VwZXJ2aXNvclxTZWdtZW50YXIuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/Audicob/Views/Supervisor/ValidarPago.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3VwZXJ2aXNvclxWYWxpZGFyUGFnby5jc2h0bWw=
+[D:/Audicob/Views/Supervisor/ValidarPagos.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3VwZXJ2aXNvclxWYWxpZGFyUGFnb3MuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
 [D:/Audicob/Views/_ViewImports.cshtml]

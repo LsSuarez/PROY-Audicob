@@ -1,14 +1,17 @@
 using Audicob.Data;
 using Audicob.Models;
 using Audicob.Models.ViewModels.Cobranza;
+using DinkToPdf;
+using DinkToPdf.Contracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
+using System.Net;
+using System.Security.Claims;
 using System.Threading.Tasks;
-using DinkToPdf;
-using DinkToPdf.Contracts;
 
 namespace Audicob.Controllers
 {
@@ -16,34 +19,67 @@ namespace Audicob.Controllers
     public class CobranzaController : Controller
     {
         private readonly ApplicationDbContext _db;
+        private readonly ILogger<CobranzaController> _logger;
+        private readonly IConverter _pdf;
 
-        public CobranzaController(ApplicationDbContext db)
+        private const decimal TasaPenalidadMensual = 0.015m; // 1.5%
+        private const int DiasPorMes = 30;
+
+        public CobranzaController(
+            ApplicationDbContext db,
+            ILogger<CobranzaController> logger,
+            IConverter pdf)
         {
             _db = db;
+            _logger = logger;
+            _pdf = pdf;
         }
 
-        // 1. Dashboard de Cobranza con búsqueda
+        // =================== Helpers ===================
+
+        private static int CalcularDiasAtraso(DateTime fechaVencimiento)
+            => Math.Max(0, (DateTime.Today - fechaVencimiento.Date).Days);
+
+        private static decimal CalcularPenalidad(decimal monto, int diasAtraso)
+        {
+            if (diasAtraso <= 0) return 0m;
+            var tasaDiaria = TasaPenalidadMensual / DiasPorMes;
+            return monto * tasaDiaria * diasAtraso;
+        }
+
+        private async Task<Cliente?> ObtenerClienteConDeudaAsync(int clienteId) =>
+            await _db.Clientes
+                     .Include(c => c.Deuda)
+                     .AsNoTracking()
+                     .FirstOrDefaultAsync(c => c.Id == clienteId);
+
+        private static string Html(string? s) => WebUtility.HtmlEncode(s ?? string.Empty);
+
+        // =================== Acciones ===================
+
+        // Panel de cobranzas por asignación del asesor
+        [HttpGet]
         public async Task<IActionResult> Dashboard(string searchTerm = "")
         {
             try
             {
-                var userId = User.Identity.Name;
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-                // Obtener todas las asignaciones del asesor
                 var asignaciones = await _db.AsignacionesAsesores
                     .Include(a => a.Cliente)
                     .Where(a => a.AsesorUserId == userId)
+                    .AsNoTracking()
                     .ToListAsync();
 
-                // Filtrar clientes por nombre o documento
-                if (!string.IsNullOrEmpty(searchTerm))
+                if (!string.IsNullOrWhiteSpace(searchTerm))
                 {
+                    var t = searchTerm.Trim();
                     asignaciones = asignaciones.Where(a =>
-                        a.Cliente.Nombre.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                        a.Cliente.Documento.Contains(searchTerm)).ToList();
+                        (a.Cliente.Nombre ?? "").Contains(t, StringComparison.OrdinalIgnoreCase) ||
+                        (a.Cliente.Documento ?? "").Contains(t, StringComparison.OrdinalIgnoreCase))
+                        .ToList();
                 }
 
-                // Crear el modelo de vista
                 var vm = new CobranzaDashboardViewModel
                 {
                     SearchTerm = searchTerm,
@@ -56,64 +92,128 @@ namespace Audicob.Controllers
                         DeudaTotal = a.Cliente.DeudaTotal
                     }).ToList()
                 };
-
-                // Verificar si no hay resultados
                 vm.VerificarResultadosBusqueda();
 
                 return View(vm);
             }
             catch (Exception ex)
             {
-                TempData["Error"] = "Ocurrió un error al cargar el dashboard: " + ex.Message;
+                _logger.LogError(ex, "Error en Dashboard de Cobranza");
+                TempData["Error"] = "Ocurrió un error al cargar el dashboard.";
                 return RedirectToAction("Index", "Home");
             }
         }
 
-        // 2. Consultar Deuda Detallada
+        // Listado + buscador por DNI/nombre (Vista: Views/Cobranza/Clientes.cshtml)
+        [HttpGet]
+        public async Task<IActionResult> Clientes(string q = "")
+        {
+            try
+            {
+                var clientes = await _db.Clientes
+                    .Include(c => c.Deuda)
+                    .AsNoTracking()
+                    .OrderBy(c => c.Nombre)
+                    .ToListAsync();
+
+                if (!string.IsNullOrWhiteSpace(q))
+                {
+                    var term = q.Trim();
+                    clientes = clientes
+                        .Where(c => (c.Documento ?? "").Contains(term, StringComparison.OrdinalIgnoreCase)
+                                 || (c.Nombre ?? "").Contains(term, StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+                }
+
+                clientes = clientes.Take(10).ToList();
+
+                var vm = new CobranzaDashboardViewModel
+                {
+                    SearchTerm = q,
+                    TotalClientesAsignados = clientes.Count,
+                    TotalDeudaCartera = clientes.Sum(c =>
+                    {
+                        if (c.Deuda != null)
+                        {
+                            var dias = CalcularDiasAtraso(c.Deuda.FechaVencimiento);
+                            var pen = CalcularPenalidad(c.Deuda.Monto, dias);
+                            return c.Deuda.Monto + pen;
+                        }
+                        return c.DeudaTotal;
+                    }),
+                    Clientes = clientes.Select(c =>
+                    {
+                        decimal total = c.DeudaTotal;
+                        if (c.Deuda != null)
+                        {
+                            var dias = CalcularDiasAtraso(c.Deuda.FechaVencimiento);
+                            var pen = CalcularPenalidad(c.Deuda.Monto, dias);
+                            total = c.Deuda.Monto + pen;
+                        }
+
+                        return new ClienteDeudaViewModel
+                        {
+                            ClienteId = c.Id,
+                            ClienteNombre = c.Nombre,
+                            DeudaTotal = total
+                        };
+                    }).ToList()
+                };
+
+                vm.VerificarResultadosBusqueda();
+                return View("Clientes", vm);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error en Clientes (buscador)");
+                TempData["Error"] = "Ocurrió un error al cargar el listado de clientes.";
+                return RedirectToAction(nameof(Dashboard));
+            }
+        }
+
+        // Detalle de deuda
+        [HttpGet]
         public async Task<IActionResult> ConsultarDeuda(int clienteId)
         {
             try
             {
-                var cliente = await _db.Clientes
-                    .Include(c => c.Deuda)
-                    .FirstOrDefaultAsync(c => c.Id == clienteId);
-
+                var cliente = await ObtenerClienteConDeudaAsync(clienteId);
                 if (cliente == null || cliente.Deuda == null)
                 {
                     TempData["Error"] = "Cliente o deuda no encontrada.";
-                    return RedirectToAction("Dashboard");
+                    return RedirectToAction(nameof(Dashboard));
                 }
 
                 var deuda = cliente.Deuda;
-                var diasDeAtraso = (DateTime.Now - deuda.FechaVencimiento).Days;
-                if (diasDeAtraso < 0) diasDeAtraso = 0; // No puede ser negativo
-                
-                var penalidadCalculada = CalcularPenalidad(deuda.Monto, diasDeAtraso);
+                var dias = CalcularDiasAtraso(deuda.FechaVencimiento);
+                var penalidad = Math.Round(CalcularPenalidad(deuda.Monto, dias), 2);
 
                 var model = new DeudaDetalleViewModel
                 {
+                    ClienteId = cliente.Id, // importante para botones
                     Cliente = cliente.Nombre,
                     MontoDeuda = deuda.Monto,
-                    DiasAtraso = diasDeAtraso,
-                    PenalidadCalculada = penalidadCalculada,
-                    TotalAPagar = deuda.Monto + penalidadCalculada,
+                    DiasAtraso = dias,
+                    PenalidadCalculada = penalidad,
+                    TotalAPagar = deuda.Monto + penalidad,
                     FechaVencimiento = deuda.FechaVencimiento,
-                    TasaPenalidad = 0.015m
+                    TasaPenalidad = TasaPenalidadMensual
                 };
 
-                return View(model);
+                return View("ConsultarDeuda", model);
             }
             catch (Exception ex)
             {
-                TempData["Error"] = "Error al consultar la deuda: " + ex.Message;
-                return RedirectToAction("Dashboard");
+                _logger.LogError(ex, "Error ConsultarDeuda cliente {ClienteId}", clienteId);
+                TempData["Error"] = "Error al consultar la deuda.";
+                return RedirectToAction(nameof(Dashboard));
             }
         }
 
-        // 3. Actualizar Penalidad (Actualización automática en tiempo real)
+        // Actualizar penalidad (AC2) — acepta returnUrl para volver a la lista con el mismo filtro
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ActualizarPenalidad(int clienteId)
+        public async Task<IActionResult> ActualizarPenalidad(int clienteId, string? returnUrl)
         {
             try
             {
@@ -124,73 +224,73 @@ namespace Audicob.Controllers
                 if (cliente == null || cliente.Deuda == null)
                 {
                     TempData["Error"] = "Cliente o deuda no encontrada.";
-                    return RedirectToAction("Dashboard");
+                    return RedirectToAction(nameof(Dashboard));
                 }
 
                 var deuda = cliente.Deuda;
-                var diasDeAtraso = (DateTime.Now - deuda.FechaVencimiento).Days;
-                if (diasDeAtraso < 0) diasDeAtraso = 0;
-                
-                var penalidadCalculada = CalcularPenalidad(deuda.Monto, diasDeAtraso);
+                var dias = CalcularDiasAtraso(deuda.FechaVencimiento);
+                var penalidad = Math.Round(CalcularPenalidad(deuda.Monto, dias), 2);
 
-                // Actualizar penalidad e intereses
-                deuda.PenalidadCalculada = penalidadCalculada;
-                deuda.Intereses = penalidadCalculada;
-                deuda.TotalAPagar = deuda.Monto + penalidadCalculada;
+                deuda.PenalidadCalculada = penalidad;
+                deuda.Intereses = penalidad;
+                deuda.TotalAPagar = deuda.Monto + penalidad;
 
-                _db.Update(deuda);
                 await _db.SaveChangesAsync();
 
-                TempData["Success"] = $"Penalidad actualizada correctamente. Nueva penalidad: S/ {penalidadCalculada:N2}";
-                return RedirectToAction("ConsultarDeuda", new { clienteId });
+                TempData["Success"] = $"Penalidad actualizada: S/ {penalidad:N2}";
+
+                if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
+                    return LocalRedirect(returnUrl);
+
+                return RedirectToAction(nameof(ConsultarDeuda), new { clienteId });
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                _logger.LogError(ex, "Concurrencia al actualizar penalidad {ClienteId}", clienteId);
+                TempData["Error"] = "Otro proceso actualizó esta deuda. Intenta de nuevo.";
+                return RedirectToAction(nameof(ConsultarDeuda), new { clienteId });
             }
             catch (Exception ex)
             {
-                TempData["Error"] = "Error al actualizar la penalidad: " + ex.Message;
-                return RedirectToAction("ConsultarDeuda", new { clienteId });
+                _logger.LogError(ex, "Error al actualizar penalidad {ClienteId}", clienteId);
+                TempData["Error"] = "Error al actualizar la penalidad.";
+                return RedirectToAction(nameof(ConsultarDeuda), new { clienteId });
             }
         }
 
-        // 4. Ver detalles calculados paso a paso (HU9)
+        // Detalle de cálculo paso a paso
+        [HttpGet]
         public async Task<IActionResult> VerDetallesCalculados(int clienteId)
         {
             try
             {
-                var cliente = await _db.Clientes
-                    .Include(c => c.Deuda)
-                    .FirstOrDefaultAsync(c => c.Id == clienteId);
-
+                var cliente = await ObtenerClienteConDeudaAsync(clienteId);
                 if (cliente == null || cliente.Deuda == null)
                 {
                     TempData["Error"] = "Cliente o deuda no encontrada.";
-                    return RedirectToAction("Dashboard");
+                    return RedirectToAction(nameof(Dashboard));
                 }
 
                 var deuda = cliente.Deuda;
-                var diasDeAtraso = (DateTime.Now - deuda.FechaVencimiento).Days;
-                if (diasDeAtraso < 0) diasDeAtraso = 0;
-                
-                var tasaMensual = 0.015m; // 1.5% mensual
-                var tasaDiaria = tasaMensual / 30;
-                var penalidadCalculada = deuda.Monto * tasaDiaria * diasDeAtraso;
+                var dias = CalcularDiasAtraso(deuda.FechaVencimiento);
+                var tasaDiaria = TasaPenalidadMensual / DiasPorMes;
+                var penalidad = Math.Round(deuda.Monto * tasaDiaria * dias, 2);
 
                 var model = new CalculoPenalidadDetalleViewModel
                 {
                     ClienteNombre = cliente.Nombre,
                     MontoOriginal = deuda.Monto,
                     FechaVencimiento = deuda.FechaVencimiento,
-                    DiasDeAtraso = diasDeAtraso,
-                    TasaPenalidadMensual = tasaMensual,
+                    DiasDeAtraso = dias,
+                    TasaPenalidadMensual = TasaPenalidadMensual,
                     TasaPenalidadDiaria = tasaDiaria,
-                    PenalidadCalculada = penalidadCalculada,
-                    TotalAPagar = deuda.Monto + penalidadCalculada,
-                    
-                    // Fórmula paso a paso
-                    FormulaTexto = "Penalidad = Monto Original × Tasa Diaria × Días de Atraso",
-                    Paso1 = $"Tasa Mensual = {tasaMensual:P2} (1.5%)",
-                    Paso2 = $"Tasa Diaria = {tasaMensual:P4} ÷ 30 días = {tasaDiaria:P4}",
-                    Paso3 = $"Penalidad = S/ {deuda.Monto:N2} × {tasaDiaria:P4} × {diasDeAtraso} días",
-                    Paso4 = $"Penalidad = S/ {penalidadCalculada:N2}"
+                    PenalidadCalculada = penalidad,
+                    TotalAPagar = deuda.Monto + penalidad,
+                    FormulaTexto = "Penalidad = Monto × TasaDiaria × DíasAtraso",
+                    Paso1 = $"Tasa Mensual = {TasaPenalidadMensual:P2}",
+                    Paso2 = $"Tasa Diaria = {TasaPenalidadMensual:P4} ÷ 30 = {tasaDiaria:P4}",
+                    Paso3 = $"Penalidad = S/ {deuda.Monto:N2} × {tasaDiaria:P4} × {dias}",
+                    Paso4 = $"Penalidad = S/ {penalidad:N2}"
                 };
 
                 ViewBag.ClienteId = clienteId;
@@ -198,149 +298,126 @@ namespace Audicob.Controllers
             }
             catch (Exception ex)
             {
-                TempData["Error"] = "Error al calcular los detalles: " + ex.Message;
-                return RedirectToAction("Dashboard");
+                _logger.LogError(ex, "Error VerDetallesCalculados {ClienteId}", clienteId);
+                TempData["Error"] = "Error al calcular los detalles.";
+                return RedirectToAction(nameof(Dashboard));
             }
         }
 
-        // 5. Generar Comprobante PDF (HU9)
+        // Generar comprobante PDF
+        [HttpGet]
         public async Task<IActionResult> GenerarComprobante(int clienteId)
         {
             try
             {
-                var cliente = await _db.Clientes
-                    .Include(c => c.Deuda)
-                    .FirstOrDefaultAsync(c => c.Id == clienteId);
-
+                var cliente = await ObtenerClienteConDeudaAsync(clienteId);
                 if (cliente == null || cliente.Deuda == null)
                 {
                     TempData["Error"] = "Cliente o deuda no encontrada.";
-                    return RedirectToAction("Dashboard");
+                    return RedirectToAction(nameof(Dashboard));
                 }
 
                 var deuda = cliente.Deuda;
-                var diasDeAtraso = (DateTime.Now - deuda.FechaVencimiento).Days;
-                if (diasDeAtraso < 0) diasDeAtraso = 0;
-                
-                var penalidadCalculada = CalcularPenalidad(deuda.Monto, diasDeAtraso);
+                var dias = CalcularDiasAtraso(deuda.FechaVencimiento);
+                var penalidad = Math.Round(CalcularPenalidad(deuda.Monto, dias), 2);
 
-                var model = new ComprobanteDeudaViewModel
+                var model = new ComprobanteDeudaPdfViewModel
                 {
                     Cliente = cliente.Nombre,
                     MontoDeuda = deuda.Monto,
-                    DiasDeAtraso = diasDeAtraso,
-                    TasaPenalidad = 0.015m,
-                    PenalidadCalculada = penalidadCalculada,
-                    TotalAPagar = deuda.Monto + penalidadCalculada,
+                    DiasDeAtraso = dias,
+                    TasaPenalidad = TasaPenalidadMensual,
+                    PenalidadCalculada = penalidad,
+                    TotalAPagar = deuda.Monto + penalidad,
                     FechaVencimiento = deuda.FechaVencimiento
                 };
 
-                var htmlContent = GenerateHtml(model);
-                var pdfBytes = GeneratePdf(htmlContent);
+                var html = GenerateHtml(model);
+                var bytes = GeneratePdf(html);
 
-                return File(pdfBytes, "application/pdf", $"Comprobante_{cliente.Nombre}_{DateTime.Now:yyyyMMdd}.pdf");
+                var safeName = string.Join("_",
+                    (cliente.Nombre ?? "Cliente").Split(System.IO.Path.GetInvalidFileNameChars()));
+
+                return File(bytes, "application/pdf",
+                    $"Comprobante_{safeName}_{DateTime.Now:yyyyMMddHHmm}.pdf");
             }
             catch (Exception ex)
             {
-                TempData["Error"] = "Error al generar el comprobante: " + ex.Message;
-                return RedirectToAction("ConsultarDeuda", new { clienteId });
+                // IMPORTANTE: deja el detalle de error real en TempData para depurar rápido
+                _logger.LogError(ex, "Error GenerarComprobante {ClienteId}", clienteId);
+                TempData["Error"] = $"Error al generar el comprobante: {ex.GetType().Name} - {ex.Message}";
+                return RedirectToAction(nameof(ConsultarDeuda), new { clienteId });
             }
         }
 
-        // Calcular Penalidad
-        private decimal CalcularPenalidad(decimal monto, int diasDeAtraso)
-        {
-            if (diasDeAtraso <= 0) return 0;
-            
-            decimal tasaPenalidadMensual = 0.015m; // 1.5% mensual
-            decimal tasaPenalidadDiaria = tasaPenalidadMensual / 30;
-            return monto * tasaPenalidadDiaria * diasDeAtraso;
-        }
+        // =================== PDF helpers ===================
 
-        // Generar HTML mejorado para el PDF
-        private string GenerateHtml(ComprobanteDeudaViewModel model)
+        private string GenerateHtml(ComprobanteDeudaPdfViewModel m)
         {
+            var cliente = Html(m.Cliente);
+
             return $@"
-                <html>
-                <head>
-                    <style>
-                        body {{ font-family: Arial, sans-serif; margin: 40px; }}
-                        h1 {{ color: #2c3e50; text-align: center; }}
-                        .header {{ background-color: #3498db; color: white; padding: 20px; text-align: center; }}
-                        .content {{ margin: 20px 0; }}
-                        .row {{ display: flex; justify-content: space-between; margin: 10px 0; }}
-                        .label {{ font-weight: bold; }}
-                        .value {{ text-align: right; }}
-                        .total {{ background-color: #e74c3c; color: white; padding: 15px; font-size: 20px; text-align: center; margin-top: 20px; }}
-                        table {{ width: 100%; border-collapse: collapse; margin: 20px 0; }}
-                        td {{ padding: 10px; border-bottom: 1px solid #ddd; }}
-                    </style>
-                </head>
-                <body>
-                    <div class='header'>
-                        <h1>COMPROBANTE DE DEUDA</h1>
-                        <p>Sistema de Cobranza AUDICOB</p>
-                    </div>
-                    <div class='content'>
-                        <p><strong>Fecha de emisión:</strong> {DateTime.Now:dd/MM/yyyy HH:mm}</p>
-                        
-                        <table>
-                            <tr>
-                                <td class='label'>Cliente:</td>
-                                <td class='value'>{model.Cliente}</td>
-                            </tr>
-                            <tr>
-                                <td class='label'>Monto Original:</td>
-                                <td class='value'>S/ {model.MontoDeuda:N2}</td>
-                            </tr>
-                            <tr>
-                                <td class='label'>Fecha de Vencimiento:</td>
-                                <td class='value'>{model.FechaVencimiento:dd/MM/yyyy}</td>
-                            </tr>
-                            <tr>
-                                <td class='label'>Días de Atraso:</td>
-                                <td class='value'>{model.DiasDeAtraso} días</td>
-                            </tr>
-                            <tr>
-                                <td class='label'>Tasa de Penalidad Mensual:</td>
-                                <td class='value'>{model.TasaPenalidad:P2}</td>
-                            </tr>
-                            <tr>
-                                <td class='label'>Penalidad Calculada:</td>
-                                <td class='value' style='color: #e74c3c;'>S/ {model.PenalidadCalculada:N2}</td>
-                            </tr>
-                        </table>
-                        
-                        <div class='total'>
-                            <strong>TOTAL A PAGAR: S/ {model.TotalAPagar:N2}</strong>
-                        </div>
-                    </div>
-                </body>
-                </html>
-            ";
+<html>
+<head>
+<meta charset='utf-8' />
+<style>
+body {{ font-family: Arial, sans-serif; margin: 32px; }}
+h1 {{ color: #2c3e50; text-align: center; }}
+.header {{ background:#3498db; color:#fff; padding:16px; text-align:center; border-radius:8px; }}
+table {{ width:100%; border-collapse:collapse; margin-top:18px; }}
+td {{ padding:10px 8px; border-bottom:1px solid #eee; }}
+.label {{ font-weight:600; }}
+.total {{ background:#e74c3c; color:#fff; padding:14px; text-align:center; font-size:18px; border-radius:8px; margin-top:18px; }}
+.muted {{ color:#666; font-size:12px; text-align:right; }}
+</style>
+</head>
+<body>
+<div class='header'><h1>COMPROBANTE DE DEUDA</h1><div>Sistema de Cobranza AUDICOB</div></div>
+<div class='muted'>Fecha de emisión: {DateTime.Now:dd/MM/yyyy HH:mm}</div>
+<table>
+<tr><td class='label'>Cliente:</td><td>{cliente}</td></tr>
+<tr><td class='label'>Monto Original:</td><td>S/ {m.MontoDeuda:N2}</td></tr>
+<tr><td class='label'>Fecha de Vencimiento:</td><td>{m.FechaVencimiento:dd/MM/yyyy}</td></tr>
+<tr><td class='label'>Días de Atraso:</td><td>{m.DiasDeAtraso} días</td></tr>
+<tr><td class='label'>Tasa Penalidad Mensual:</td><td>{m.TasaPenalidad:P2}</td></tr>
+<tr><td class='label'>Penalidad Calculada:</td><td><b>S/ {m.PenalidadCalculada:N2}</b></td></tr>
+</table>
+<div class='total'><b>TOTAL A PAGAR: S/ {m.TotalAPagar:N2}</b></div>
+</body>
+</html>";
         }
 
-        // Generar PDF usando DinkToPdf
         private byte[] GeneratePdf(string htmlContent)
         {
-            var converter = new BasicConverter(new PdfTools());
-            var doc = new HtmlToPdfDocument()
+            try
             {
-                GlobalSettings = {
-                    ColorMode = ColorMode.Color,
-                    Orientation = Orientation.Portrait,
-                    PaperSize = PaperKind.A4,
-                    Margins = new MarginSettings { Top = 10, Bottom = 10, Left = 10, Right = 10 }
-                },
-                Objects = {
-                    new ObjectSettings() {
-                        HtmlContent = htmlContent,
-                        WebSettings = { DefaultEncoding = "utf-8" }
+                var doc = new HtmlToPdfDocument
+                {
+                    GlobalSettings = new GlobalSettings
+                    {
+                        ColorMode = ColorMode.Color,
+                        Orientation = Orientation.Portrait,
+                        PaperSize = PaperKind.A4,
+                        Margins = new MarginSettings { Top = 10, Bottom = 10, Left = 10, Right = 10 }
+                    },
+                    Objects =
+                    {
+                        new ObjectSettings
+                        {
+                            HtmlContent = htmlContent,
+                            WebSettings = { DefaultEncoding = "utf-8", LoadImages = true }
+                        }
                     }
-                }
-            };
+                };
 
-            return converter.Convert(doc);
+                return _pdf.Convert(doc);
+            }
+            catch (Exception ex)
+            {
+                // Log del convertidor y re-lanzamos para que el catch del Action maneje TempData + redirect
+                _logger.LogError(ex, "DinkToPdf error: {Message}", ex.Message);
+                throw;
+            }
         }
     }
 }

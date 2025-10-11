@@ -4,13 +4,13 @@
       <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\Audicob.napxhpe3w8.bundle.scp.css'))</AssetFile>
       <Selectors><![CDATA[[]]]></Selectors>
       <EndpointProperties><![CDATA[[{"Name":"integrity","Value":"sha256-T1PztI6y96xqUWZSawrOW\u002BAHHv79EKh020xQRWMrSbk="}]]]></EndpointProperties>
-      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"no-cache"},{"Name":"Content-Length","Value":"2102"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u0022T1PztI6y96xqUWZSawrOW\u002BAHHv79EKh020xQRWMrSbk=\u0022"},{"Name":"Last-Modified","Value":"Tue, 30 Sep 2025 22:21:43 GMT"}]]]></ResponseHeaders>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"no-cache"},{"Name":"Content-Length","Value":"2102"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u0022T1PztI6y96xqUWZSawrOW\u002BAHHv79EKh020xQRWMrSbk=\u0022"},{"Name":"Last-Modified","Value":"Wed, 08 Oct 2025 00:18:14 GMT"}]]]></ResponseHeaders>
     </StaticWebAssetEndpoint>
     <StaticWebAssetEndpoint Include="_content/Audicob/Audicob.napxhpe3w8.bundle.scp.css">
       <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\Audicob.napxhpe3w8.bundle.scp.css'))</AssetFile>
       <Selectors><![CDATA[[]]]></Selectors>
       <EndpointProperties><![CDATA[[{"Name":"fingerprint","Value":"napxhpe3w8"},{"Name":"integrity","Value":"sha256-T1PztI6y96xqUWZSawrOW\u002BAHHv79EKh020xQRWMrSbk="},{"Name":"label","Value":"_content/Audicob/Audicob.bundle.scp.css"}]]]></EndpointProperties>
-      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"2102"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u0022T1PztI6y96xqUWZSawrOW\u002BAHHv79EKh020xQRWMrSbk=\u0022"},{"Name":"Last-Modified","Value":"Tue, 30 Sep 2025 22:21:43 GMT"}]]]></ResponseHeaders>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"2102"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u0022T1PztI6y96xqUWZSawrOW\u002BAHHv79EKh020xQRWMrSbk=\u0022"},{"Name":"Last-Modified","Value":"Wed, 08 Oct 2025 00:18:14 GMT"}]]]></ResponseHeaders>
     </StaticWebAssetEndpoint>
     <StaticWebAssetEndpoint Include="_content/Audicob/css/site.b9sayid5wm.css">
       <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\css\site.css'))</AssetFile>

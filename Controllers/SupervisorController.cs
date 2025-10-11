@@ -1,13 +1,16 @@
 using Audicob.Data;
 using Audicob.Models;
 using Audicob.Models.ViewModels.Supervisor;
+using Audicob.Models.ViewModels.Cobranza;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace Audicob.Controllers
 {
@@ -16,14 +19,16 @@ namespace Audicob.Controllers
     {
         private readonly ApplicationDbContext _db;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ILogger<SupervisorController> _logger;
 
-        public SupervisorController(ApplicationDbContext db, UserManager<ApplicationUser> userManager)
+        public SupervisorController(ApplicationDbContext db, UserManager<ApplicationUser> userManager, ILogger<SupervisorController> logger)
         {
             _db = db ?? throw new ArgumentNullException(nameof(db));
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        // Dashboard principal
+        // =================== DASHBOARD ===================
         public async Task<IActionResult> Dashboard()
         {
             var vm = new SupervisorDashboardViewModel
@@ -36,6 +41,7 @@ namespace Audicob.Controllers
                     .SumAsync(p => p.Monto)
             };
 
+            // Gráfico de pagos por mes (últimos 6 meses)
             var pagos = await _db.Pagos
                 .Where(p => p.Fecha >= DateTime.UtcNow.AddMonths(-6))
                 .GroupBy(p => new { p.Fecha.Year, p.Fecha.Month })
@@ -45,18 +51,13 @@ namespace Audicob.Controllers
                     Month = g.Key.Month,
                     Total = g.Sum(x => x.Monto)
                 })
-                .OrderBy(x => x.Month)
+                .OrderBy(x => x.Year).ThenBy(x => x.Month)
                 .ToListAsync();
 
-            var pagosFormat = pagos.Select(g => new
-            {
-                Mes = $"{g.Month}/{g.Year}",
-                Total = g.Total
-            }).ToList();
+            vm.Meses = pagos.Select(g => $"{g.Month}/{g.Year}").ToList();
+            vm.PagosPorMes = pagos.Select(g => g.Total).ToList();
 
-            vm.Meses = pagosFormat.Select(p => p.Mes).ToList();
-            vm.PagosPorMes = pagosFormat.Select(p => p.Total).ToList();
-
+            // Clientes con mayor deuda
             var deudas = await _db.Clientes
                 .OrderByDescending(c => c.DeudaTotal)
                 .Take(5)
@@ -66,27 +67,24 @@ namespace Audicob.Controllers
             vm.Clientes = deudas.Select(d => d.Nombre).ToList();
             vm.DeudasPorCliente = deudas.Select(d => d.DeudaTotal).ToList();
 
-            var pagosPendientes = await _db.Pagos
+            // Pagos pendientes recientes
+            vm.PagosPendientes = await _db.Pagos
                 .Where(p => p.Estado == "Pendiente")
                 .Include(p => p.Cliente)
                 .OrderBy(p => p.Fecha)
                 .Take(10)
                 .ToListAsync();
 
-            vm.PagosPendientes = pagosPendientes;
-
             return View(vm);
         }
 
-        // HU7: Validar pago
+        // =================== HU7: VALIDAR PAGO ===================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ValidarPago(int pagoId)
         {
-            var pago = await _db.Pagos
-                .Include(p => p.Cliente)
-                .FirstOrDefaultAsync(p => p.Id == pagoId);
-                
+            var pago = await _db.Pagos.Include(p => p.Cliente).FirstOrDefaultAsync(p => p.Id == pagoId);
+
             if (pago == null)
             {
                 TempData["Error"] = "Pago no encontrado.";
@@ -100,12 +98,9 @@ namespace Audicob.Controllers
             }
 
             var user = await _userManager.GetUserAsync(User);
-
             pago.Validado = true;
             pago.Estado = "Cancelado";
-            
-            var fechaValidacion = DateTime.UtcNow;
-            pago.Observacion = $"Validado por {user.FullName} el {fechaValidacion:dd/MM/yyyy HH:mm:ss}";
+            pago.Observacion = $"Validado por {user.FullName} el {DateTime.UtcNow:dd/MM/yyyy HH:mm:ss}";
 
             if (pago.Cliente != null)
             {
@@ -121,7 +116,84 @@ namespace Audicob.Controllers
             return RedirectToAction("Dashboard");
         }
 
-        // GET: Asignar línea de crédito
+        // =================== HU22: VALIDAR PAGOS (ESTADOS Y CONTROL) ===================
+        [HttpGet]
+        public async Task<IActionResult> ValidarPagos()
+        {
+            try
+            {
+                var pagos = await _db.Pagos
+                    .Include(p => p.Cliente)
+                    .OrderByDescending(p => p.Fecha)
+                    .ToListAsync();
+
+                var vm = pagos.Select(p => new PagoValidacionViewModel
+                {
+                    PagoId = p.Id,
+                    ClienteNombre = p.Cliente.Nombre,
+                    Fecha = p.Fecha,
+                    Monto = p.Monto,
+                    Estado = p.Estado,
+                    Validado = p.Validado,
+                    Observacion = p.Observacion
+                }).ToList();
+
+                return View("ValidarPagos", vm);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al cargar los pagos para validación");
+                TempData["Error"] = "Ocurrió un error al cargar los pagos.";
+                return RedirectToAction("Dashboard");
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CambiarEstadoPago(int id, string nuevoEstado)
+        {
+            try
+            {
+                var pago = await _db.Pagos
+                    .Include(p => p.Cliente)
+                    .FirstOrDefaultAsync(p => p.Id == id);
+
+                if (pago == null)
+                {
+                    TempData["Error"] = "No se encontró el pago.";
+                    return RedirectToAction(nameof(ValidarPagos));
+                }
+
+                pago.Estado = nuevoEstado;
+                pago.Validado = (nuevoEstado == "Cancelado");
+
+                if (pago.Validado && pago.Cliente != null)
+                {
+                    var deuda = await _db.Deudas.FirstOrDefaultAsync(d => d.ClienteId == pago.ClienteId);
+                    if (deuda != null)
+                    {
+                        deuda.TotalAPagar = 0;
+                        deuda.PenalidadCalculada = 0;
+                        deuda.Monto = 0;
+                    }
+
+                    pago.Observacion = $"Pago validado como '{nuevoEstado}' el {DateTime.Now:dd/MM/yyyy HH:mm}";
+                }
+
+                await _db.SaveChangesAsync();
+
+                TempData["Success"] = $"El estado del pago se actualizó a '{nuevoEstado}'.";
+                return RedirectToAction(nameof(ValidarPagos));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al cambiar el estado del pago {Id}", id);
+                TempData["Error"] = "Error al cambiar el estado del pago.";
+                return RedirectToAction(nameof(ValidarPagos));
+            }
+        }
+
+        // =================== ASIGNACIÓN DE LÍNEA DE CRÉDITO ===================
         public async Task<IActionResult> AsignarLineaCredito(int id)
         {
             var cliente = await TryGetClienteAsync(id);
@@ -148,7 +220,6 @@ namespace Audicob.Controllers
             return View(vm);
         }
 
-        // POST: Asignar línea de crédito (HU3)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AsignarLineaCredito(AsignacionLineaCreditoViewModel model)
@@ -172,11 +243,9 @@ namespace Audicob.Controllers
             if (model.MontoAsignado < 180)
             {
                 ModelState.AddModelError("MontoAsignado", "El valor ingresado debe ser mayor que 180 soles.");
-                
                 model.NombreCliente = cliente.Nombre;
                 model.DeudaTotal = cliente.DeudaTotal;
                 model.IngresosMensuales = cliente.IngresosMensuales;
-                
                 return View(model);
             }
 
@@ -197,214 +266,10 @@ namespace Audicob.Controllers
             return RedirectToAction("Dashboard");
         }
 
-        // HU1: Ver informe financiero detallado
-        public async Task<IActionResult> VerInformeFinanciero(int id)
-        {
-            var cliente = await _db.Clientes
-                .Include(c => c.Pagos)
-                .Include(c => c.Deuda)
-                .Include(c => c.Evaluaciones)
-                .Include(c => c.LineaCredito)
-                .FirstOrDefaultAsync(c => c.Id == id);
-
-            if (cliente == null)
-            {
-                TempData["Error"] = "Cliente no encontrado.";
-                return RedirectToAction("Dashboard");
-            }
-
-            var pagosUltimos12Meses = await _db.Pagos
-                .Where(p => p.ClienteId == cliente.Id && p.Fecha >= DateTime.UtcNow.AddMonths(-12))
-                .OrderByDescending(p => p.Fecha)
-                .ToListAsync();
-
-            var vm = new InformeFinancieroViewModel
-            {
-                ClienteId = cliente.Id,
-                ClienteNombre = cliente.Nombre,
-                Documento = cliente.Documento,
-                IngresosMensuales = cliente.IngresosMensuales,
-                DeudaTotal = cliente.DeudaTotal,
-                FechaActualizacion = cliente.FechaActualizacion,
-                PagosUltimos12Meses = pagosUltimos12Meses,
-                TotalPagado12Meses = pagosUltimos12Meses.Sum(p => p.Monto),
-                LineaCredito = cliente.LineaCredito,
-                Deuda = cliente.Deuda,
-                Evaluaciones = cliente.Evaluaciones.OrderByDescending(e => e.Fecha).ToList()
-            };
-
-            return View(vm);
-        }
-
-        // HU2: Ver evaluaciones pendientes
-        public async Task<IActionResult> EvaluacionesPendientes()
-        {
-            var evaluaciones = await _db.Evaluaciones
-                .Include(e => e.Cliente)
-                .Where(e => e.Estado == "Pendiente")
-                .OrderBy(e => e.Fecha)
-                .ToListAsync();
-
-            return View(evaluaciones);
-        }
-
-        // HU2: Ver detalle de evaluación
-        public async Task<IActionResult> DetalleEvaluacion(int id)
-        {
-            var evaluacion = await _db.Evaluaciones
-                .Include(e => e.Cliente)
-                .FirstOrDefaultAsync(e => e.Id == id);
-
-            if (evaluacion == null)
-            {
-                TempData["Error"] = "Evaluación no encontrada.";
-                return RedirectToAction("EvaluacionesPendientes");
-            }
-
-            var vm = new EvaluacionViewModel
-            {
-                ClienteId = evaluacion.ClienteId,
-                NombreCliente = evaluacion.Cliente.Nombre,
-                IngresosMensuales = evaluacion.Cliente.IngresosMensuales,
-                DeudaTotal = evaluacion.Cliente.DeudaTotal,
-                Estado = evaluacion.Estado,
-                Responsable = evaluacion.Responsable,
-                Comentario = evaluacion.Comentario,
-                FechaEvaluacion = evaluacion.Fecha
-            };
-
-            return View(vm);
-        }
-
-        // HU2: Confirmar evaluación
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ConfirmarEvaluacion(int id)
-        {
-            var evaluacion = await _db.Evaluaciones
-                .Include(e => e.Cliente)
-                .FirstOrDefaultAsync(e => e.Id == id);
-
-            if (evaluacion == null)
-            {
-                TempData["Error"] = "Evaluación no encontrada.";
-                return RedirectToAction("EvaluacionesPendientes");
-            }
-
-            var user = await _userManager.GetUserAsync(User);
-
-            evaluacion.Estado = "Marcado";
-            evaluacion.Responsable = user.FullName;
-            evaluacion.Fecha = DateTime.UtcNow;
-
-            _db.Update(evaluacion);
-            await _db.SaveChangesAsync();
-
-            TempData["Success"] = $"Evaluación confirmada y marcada por {user.FullName}.";
-            return RedirectToAction("EvaluacionesPendientes");
-        }
-
-        // HU2: Rechazar evaluación
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> RechazarEvaluacion(int id, string comentario)
-        {
-            if (string.IsNullOrWhiteSpace(comentario))
-            {
-                TempData["Error"] = "El comentario es obligatorio al rechazar una evaluación.";
-                return RedirectToAction("DetalleEvaluacion", new { id });
-            }
-
-            var evaluacion = await _db.Evaluaciones
-                .Include(e => e.Cliente)
-                .FirstOrDefaultAsync(e => e.Id == id);
-
-            if (evaluacion == null)
-            {
-                TempData["Error"] = "Evaluación no encontrada.";
-                return RedirectToAction("EvaluacionesPendientes");
-            }
-
-            var user = await _userManager.GetUserAsync(User);
-
-            evaluacion.Estado = "Rechazado";
-            evaluacion.Responsable = user.FullName;
-            evaluacion.Comentario = comentario;
-            evaluacion.Fecha = DateTime.UtcNow;
-
-            _db.Update(evaluacion);
-            await _db.SaveChangesAsync();
-
-            TempData["Success"] = $"Evaluación rechazada por {user.FullName}.";
-            return RedirectToAction("EvaluacionesPendientes");
-        }
-
-        // HU4: Buscar cliente
-        public async Task<IActionResult> BuscarCliente(string codigo)
-        {
-            if (string.IsNullOrWhiteSpace(codigo))
-            {
-                TempData["Error"] = "Debe ingresar un código o documento para buscar.";
-                return RedirectToAction("Dashboard");
-            }
-
-            var cliente = await _db.Clientes
-                .Include(c => c.Pagos)
-                .Include(c => c.Deuda)
-                .Include(c => c.Evaluaciones)
-                .Include(c => c.LineaCredito)
-                .Include(c => c.AsignacionAsesor)
-                .FirstOrDefaultAsync(c => c.Documento == codigo || c.Id.ToString() == codigo);
-
-            if (cliente == null)
-            {
-                TempData["Error"] = "Cliente no encontrado.";
-                return RedirectToAction("Dashboard");
-            }
-
-            return RedirectToAction("PerfilCliente", new { id = cliente.Id });
-        }
-
-        // HU4: Ver perfil completo del cliente
-        public async Task<IActionResult> PerfilCliente(int id)
-        {
-            var cliente = await _db.Clientes
-                .Include(c => c.Pagos)
-                .Include(c => c.Deuda)
-                .Include(c => c.Evaluaciones)
-                .Include(c => c.LineaCredito)
-                .Include(c => c.AsignacionAsesor)
-                .FirstOrDefaultAsync(c => c.Id == id);
-
-            if (cliente == null)
-            {
-                TempData["Error"] = "Cliente no encontrado.";
-                return RedirectToAction("Dashboard");
-            }
-
-            var transacciones = await _db.Transacciones
-                .Where(t => t.ClienteId == cliente.Id)
-                .OrderByDescending(t => t.Fecha)
-                .Take(10)
-                .ToListAsync();
-
-            var vm = new PerfilClienteViewModel
-            {
-                ClienteInfo = cliente,  // CORREGIDO: Cambié "Cliente" a "ClienteInfo"
-                TransaccionesRecientes = transacciones,
-                TotalPagos = cliente.Pagos.Sum(p => p.Monto),
-                PagosValidados = cliente.Pagos.Count(p => p.Validado),
-                PagosPendientes = cliente.Pagos.Count(p => !p.Validado)
-            };
-
-            return View(vm);
-        }
-
+        // =================== AUXILIARES ===================
         private async Task<Cliente?> TryGetClienteAsync(int clienteId)
         {
-            return await _db.Clientes
-                .Include(c => c.LineaCredito)
-                .FirstOrDefaultAsync(c => c.Id == clienteId);
+            return await _db.Clientes.Include(c => c.LineaCredito).FirstOrDefaultAsync(c => c.Id == clienteId);
         }
     }
 }
