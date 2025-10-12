@@ -1,0 +1,73 @@
+@model Audicob.Models.HistorialCredito
+@{
+    ViewData["Title"] = "Editar Historial de Crédito";
+}
+
+<h2 class="mb-4">@ViewData["Title"]</h2>
+
+<form asp-action="EditarHistorial" method="post">
+    <input type="hidden" asp-for="Id" />
+
+    <div class="form-group mb-3">
+        <label asp-for="NombreCliente" class="form-label"></label>
+        <input asp-for="NombreCliente" class="form-control" />
+        <span asp-validation-for="NombreCliente" class="text-danger"></span>
+    </div>
+
+    <div class="form-group mb-3">
+        <label asp-for="DniCliente" class="form-label"></label>
+        <input asp-for="DniCliente" class="form-control" />
+        <span asp-validation-for="DniCliente" class="text-danger"></span>
+    </div>
+
+    <div class="form-group mb-3">
+        <label asp-for="CodigoCliente" class="form-label"></label>
+        <input asp-for="CodigoCliente" class="form-control" />
+        <span asp-validation-for="CodigoCliente" class="text-danger"></span>
+    </div>
+
+    <div class="form-group mb-3">
+        <label asp-for="TipoOperacion" class="form-label"></label>
+        <input asp-for="TipoOperacion" class="form-control" />
+        <span asp-validation-for="TipoOperacion" class="text-danger"></span>
+    </div>
+
+    <div class="form-group mb-3">
+        <label asp-for="MontoOperacion" class="form-label"></label>
+        <input asp-for="MontoOperacion" class="form-control" />
+        <span asp-validation-for="MontoOperacion" class="text-danger"></span>
+    </div>
+
+    <div class="form-group mb-3">
+        <label asp-for="FechaOperacion" class="form-label"></label>
+        <input asp-for="FechaOperacion" type="date" class="form-control" />
+        <span asp-validation-for="FechaOperacion" class="text-danger"></span>
+    </div>
+
+    <div class="form-group mb-3">
+        <label asp-for="EstadoPago" class="form-label"></label>
+        <input asp-for="EstadoPago" class="form-control" />
+        <span asp-validation-for="EstadoPago" class="text-danger"></span>
+    </div>
+
+    <div class="form-group mb-3">
+        <label asp-for="ProductoServicio" class="form-label"></label>
+        <input asp-for="ProductoServicio" class="form-control" />
+        <span asp-validation-for="ProductoServicio" class="text-danger"></span>
+    </div>
+
+    <div class="form-group mb-3">
+        <label asp-for="DiasCredito" class="form-label"></label>
+        <input asp-for="DiasCredito" class="form-control" />
+        <span asp-validation-for="DiasCredito" class="text-danger"></span>
+    </div>
+
+    <div class="form-group mb-3">
+        <label asp-for="Observaciones" class="form-label"></label>
+        <textarea asp-for="Observaciones" class="form-control"></textarea>
+        <span asp-validation-for="Observaciones" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-success">💾 Guardar cambios</button>
+    <a asp-action="HistorialCredito" class="btn btn-secondary ms-2">⬅ Volver</a>
+</form>
