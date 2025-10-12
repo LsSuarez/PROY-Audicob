@@ -17,125 +17,133 @@ build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = Audicob
 build_property.RootNamespace = Audicob
-build_property.ProjectDir = C:\Users\abel_\Downloads\de0\PROY-Audicob\
+build_property.ProjectDir = D:\BRYAN\clases\ING DE SOFTWARE 2\PROGRAMACION\AUD5\PROY-Audicob\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
 build_property.RazorLangVersion = 9.0
 build_property.SupportLocalizedComponentNames = 
 build_property.GenerateRazorMetadataSourceChecksumAttributes = 
-build_property.MSBuildProjectDirectory = C:\Users\abel_\Downloads\de0\PROY-Audicob
+build_property.MSBuildProjectDirectory = D:\BRYAN\clases\ING DE SOFTWARE 2\PROGRAMACION\AUD5\PROY-Audicob
 build_property._RazorSourceGeneratorDebug = 
 build_property.EffectiveAnalysisLevelStyle = 9.0
 build_property.EnableCodeStyleSeverity = 
 
-[C:/Users/abel_/Downloads/de0/PROY-Audicob/Areas/Identity/Pages/_ViewStart.cshtml]
+[D:/BRYAN/clases/ING DE SOFTWARE 2/PROGRAMACION/AUD5/PROY-Audicob/Areas/Identity/Pages/_ViewStart.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcSWRlbnRpdHlcUGFnZXNcX1ZpZXdTdGFydC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/abel_/Downloads/de0/PROY-Audicob/Views/Account/AccessDenied.cshtml]
+[D:/BRYAN/clases/ING DE SOFTWARE 2/PROGRAMACION/AUD5/PROY-Audicob/Views/Account/AccessDenied.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxBY2Nlc3NEZW5pZWQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/abel_/Downloads/de0/PROY-Audicob/Views/Account/Login.cshtml]
+[D:/BRYAN/clases/ING DE SOFTWARE 2/PROGRAMACION/AUD5/PROY-Audicob/Views/Account/Login.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxMb2dpbi5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/abel_/Downloads/de0/PROY-Audicob/Views/Account/Register.cshtml]
+[D:/BRYAN/clases/ING DE SOFTWARE 2/PROGRAMACION/AUD5/PROY-Audicob/Views/Account/Register.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxSZWdpc3Rlci5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/abel_/Downloads/de0/PROY-Audicob/Views/Admin/Dashboard.cshtml]
+[D:/BRYAN/clases/ING DE SOFTWARE 2/PROGRAMACION/AUD5/PROY-Audicob/Views/Admin/Dashboard.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cRGFzaGJvYXJkLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/abel_/Downloads/de0/PROY-Audicob/Views/Asesor/Dashboard.cshtml]
+[D:/BRYAN/clases/ING DE SOFTWARE 2/PROGRAMACION/AUD5/PROY-Audicob/Views/Asesor/Dashboard.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQXNlc29yXERhc2hib2FyZC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/abel_/Downloads/de0/PROY-Audicob/Views/ClienteBusqueda/Index.cshtml]
+[D:/BRYAN/clases/ING DE SOFTWARE 2/PROGRAMACION/AUD5/PROY-Audicob/Views/ClienteBusqueda/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2xpZW50ZUJ1c3F1ZWRhXEluZGV4LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/abel_/Downloads/de0/PROY-Audicob/Views/Cliente/Dashboard.cshtml]
+[D:/BRYAN/clases/ING DE SOFTWARE 2/PROGRAMACION/AUD5/PROY-Audicob/Views/Cliente/Dashboard.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2xpZW50ZVxEYXNoYm9hcmQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/abel_/Downloads/de0/PROY-Audicob/Views/Cliente/EstadoCuenta.cshtml]
+[D:/BRYAN/clases/ING DE SOFTWARE 2/PROGRAMACION/AUD5/PROY-Audicob/Views/Cliente/DetalleDeudaTotal.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2xpZW50ZVxEZXRhbGxlRGV1ZGFUb3RhbC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/BRYAN/clases/ING DE SOFTWARE 2/PROGRAMACION/AUD5/PROY-Audicob/Views/Cliente/EstadoCuenta.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2xpZW50ZVxFc3RhZG9DdWVudGEuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/abel_/Downloads/de0/PROY-Audicob/Views/Cliente/VerComprobante.cshtml]
+[D:/BRYAN/clases/ING DE SOFTWARE 2/PROGRAMACION/AUD5/PROY-Audicob/Views/Cliente/VerComprobante.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2xpZW50ZVxWZXJDb21wcm9iYW50ZS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/abel_/Downloads/de0/PROY-Audicob/Views/Cobranza/Cliente.cshtml]
+[D:/BRYAN/clases/ING DE SOFTWARE 2/PROGRAMACION/AUD5/PROY-Audicob/Views/Cliente/_DetallePagoPartial.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2xpZW50ZVxfRGV0YWxsZVBhZ29QYXJ0aWFsLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/BRYAN/clases/ING DE SOFTWARE 2/PROGRAMACION/AUD5/PROY-Audicob/Views/Cobranza/Cliente.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ29icmFuemFcQ2xpZW50ZS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/abel_/Downloads/de0/PROY-Audicob/Views/Cobranza/ComprobanteDeuda.cshtml]
+[D:/BRYAN/clases/ING DE SOFTWARE 2/PROGRAMACION/AUD5/PROY-Audicob/Views/Cobranza/ComprobanteDeuda.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ29icmFuemFcQ29tcHJvYmFudGVEZXVkYS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/abel_/Downloads/de0/PROY-Audicob/Views/Cobranza/Dashboard.cshtml]
+[D:/BRYAN/clases/ING DE SOFTWARE 2/PROGRAMACION/AUD5/PROY-Audicob/Views/Cobranza/Dashboard.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ29icmFuemFcRGFzaGJvYXJkLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/abel_/Downloads/de0/PROY-Audicob/Views/Cobranza/VerDetallesCalculados.cshtml]
+[D:/BRYAN/clases/ING DE SOFTWARE 2/PROGRAMACION/AUD5/PROY-Audicob/Views/Cobranza/VerDetallesCalculados.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ29icmFuemFcVmVyRGV0YWxsZXNDYWxjdWxhZG9zLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/abel_/Downloads/de0/PROY-Audicob/Views/Home/Index.cshtml]
+[D:/BRYAN/clases/ING DE SOFTWARE 2/PROGRAMACION/AUD5/PROY-Audicob/Views/Home/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/abel_/Downloads/de0/PROY-Audicob/Views/Home/Privacy.cshtml]
+[D:/BRYAN/clases/ING DE SOFTWARE 2/PROGRAMACION/AUD5/PROY-Audicob/Views/Home/Privacy.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxQcml2YWN5LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/abel_/Downloads/de0/PROY-Audicob/Views/Shared/Error.cshtml]
+[D:/BRYAN/clases/ING DE SOFTWARE 2/PROGRAMACION/AUD5/PROY-Audicob/Views/Shared/Error.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXEVycm9yLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/abel_/Downloads/de0/PROY-Audicob/Views/Shared/_LoginPartial.cshtml]
+[D:/BRYAN/clases/ING DE SOFTWARE 2/PROGRAMACION/AUD5/PROY-Audicob/Views/Shared/_LoginPartial.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9Mb2dpblBhcnRpYWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/abel_/Downloads/de0/PROY-Audicob/Views/Shared/_ValidationScriptsPartial.cshtml]
+[D:/BRYAN/clases/ING DE SOFTWARE 2/PROGRAMACION/AUD5/PROY-Audicob/Views/Shared/_ValidationScriptsPartial.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/abel_/Downloads/de0/PROY-Audicob/Views/Supervisor/AsignarLineaCredito.cshtml]
+[D:/BRYAN/clases/ING DE SOFTWARE 2/PROGRAMACION/AUD5/PROY-Audicob/Views/Supervisor/AsignarLineaCredito.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3VwZXJ2aXNvclxBc2lnbmFyTGluZWFDcmVkaXRvLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/abel_/Downloads/de0/PROY-Audicob/Views/Supervisor/Dashboard.cshtml]
+[D:/BRYAN/clases/ING DE SOFTWARE 2/PROGRAMACION/AUD5/PROY-Audicob/Views/Supervisor/Dashboard.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3VwZXJ2aXNvclxEYXNoYm9hcmQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/abel_/Downloads/de0/PROY-Audicob/Views/Supervisor/DetalleEvaluacion.cshtml]
+[D:/BRYAN/clases/ING DE SOFTWARE 2/PROGRAMACION/AUD5/PROY-Audicob/Views/Supervisor/DetalleEvaluacion.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3VwZXJ2aXNvclxEZXRhbGxlRXZhbHVhY2lvbi5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/abel_/Downloads/de0/PROY-Audicob/Views/Supervisor/Evaluar.cshtml]
+[D:/BRYAN/clases/ING DE SOFTWARE 2/PROGRAMACION/AUD5/PROY-Audicob/Views/Supervisor/Evaluar.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3VwZXJ2aXNvclxFdmFsdWFyLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/abel_/Downloads/de0/PROY-Audicob/Views/Supervisor/Segmentar.cshtml]
+[D:/BRYAN/clases/ING DE SOFTWARE 2/PROGRAMACION/AUD5/PROY-Audicob/Views/Supervisor/Segmentar.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3VwZXJ2aXNvclxTZWdtZW50YXIuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/abel_/Downloads/de0/PROY-Audicob/Views/Supervisor/ValidarPago.cshtml]
+[D:/BRYAN/clases/ING DE SOFTWARE 2/PROGRAMACION/AUD5/PROY-Audicob/Views/Supervisor/ValidarPago.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3VwZXJ2aXNvclxWYWxpZGFyUGFnby5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/abel_/Downloads/de0/PROY-Audicob/Views/_ViewImports.cshtml]
+[D:/BRYAN/clases/ING DE SOFTWARE 2/PROGRAMACION/AUD5/PROY-Audicob/Views/_ViewImports.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdJbXBvcnRzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/abel_/Downloads/de0/PROY-Audicob/Views/_ViewStart.cshtml]
+[D:/BRYAN/clases/ING DE SOFTWARE 2/PROGRAMACION/AUD5/PROY-Audicob/Views/_ViewStart.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdTdGFydC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/abel_/Downloads/de0/PROY-Audicob/Views/Shared/_Layout.cshtml]
+[D:/BRYAN/clases/ING DE SOFTWARE 2/PROGRAMACION/AUD5/PROY-Audicob/Views/Shared/_Layout.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9MYXlvdXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = b-2x14qytju8

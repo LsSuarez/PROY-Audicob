@@ -1,9 +1,17 @@
 @model Audicob.Models.PagoPendiente
 
-<div class="border rounded p-3 mt-2 bg-light">
-    <h5>Detalle de Boleta</h5>
-    <p><strong>Descripción:</strong> @Model.Descripcion</p>
-    <p><strong>Monto:</strong> S/ @Model.Monto</p>
-    <p><strong>Fecha de Vencimiento:</strong> @Model.FechaVencimiento.ToString("dd/MM/yyyy")</p>
-    <p><strong>Estado:</strong> Pendiente de pago</p>
+<div class="bg-light p-3 border-top">
+    <div class="row">
+        <div class="col-md-6">
+            <h6 class="text-primary fw-bold mb-2">📄 Detalle de Boleta</h6>
+            <p class="mb-1"><strong>Descripción:</strong> @Model.Descripcion</p>
+            <p class="mb-1"><strong>Monto:</strong> <span class="text-danger fw-semibold">S/ @Model.Monto</span></p>
+        </div>
+        <div class="col-md-6">
+            <p class="mb-1"><strong>Fecha de Vencimiento:</strong> @Model.FechaVencimiento.ToString("dd/MM/yyyy")</p>
+            <p class="mb-0"><strong>Estado:</strong> 
+                <span class="badge bg-warning text-dark">Pendiente de pago</span>
+            </p>
+        </div>
+    </div>
 </div>

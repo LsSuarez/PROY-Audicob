@@ -7941,24 +7941,31 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\abel_\\.nuget\\packages\\": {}
+    "C:\\Users\\HOME\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\abel_\\Downloads\\de0\\PROY-Audicob\\Audicob.csproj",
+      "projectUniqueName": "D:\\BRYAN\\clases\\ING DE SOFTWARE 2\\PROGRAMACION\\AUD5\\PROY-Audicob\\Audicob.csproj",
       "projectName": "Audicob",
-      "projectPath": "C:\\Users\\abel_\\Downloads\\de0\\PROY-Audicob\\Audicob.csproj",
-      "packagesPath": "C:\\Users\\abel_\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\abel_\\Downloads\\de0\\PROY-Audicob\\obj\\",
+      "projectPath": "D:\\BRYAN\\clases\\ING DE SOFTWARE 2\\PROGRAMACION\\AUD5\\PROY-Audicob\\Audicob.csproj",
+      "packagesPath": "C:\\Users\\HOME\\.nuget\\packages\\",
+      "outputPath": "D:\\BRYAN\\clases\\ING DE SOFTWARE 2\\PROGRAMACION\\AUD5\\PROY-Audicob\\obj\\",
       "projectStyle": "PackageReference",
+      "fallbackFolders": [
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+      ],
       "configFilePaths": [
-        "C:\\Users\\abel_\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "C:\\Users\\HOME\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
         "net9.0"
       ],
       "sources": {
+        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -8033,7 +8040,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.301/PortableRuntimeIdentifierGraph.json"
       }
     }
   }
