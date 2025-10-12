@@ -1,0 +1,119 @@
+@model List<Audicob.Models.HistorialCredito>
+
+@{
+    ViewData["Title"] = "Historial Crediticio";
+}
+
+<h2>Registrar Historial Crediticio</h2>
+
+<form asp-action="HistorialCredito" method="post" class="p-3 shadow-sm rounded bg-light">
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <label>Nombre del Cliente</label>
+            <input class="form-control" name="NombreCliente" />
+        </div>
+        <div class="col-md-4 mb-3">
+            <label>DNI del Cliente</label>
+            <input class="form-control" name="DniCliente" />
+        </div>
+        <div class="col-md-4 mb-3">
+            <label>Código del Cliente</label>
+            <input class="form-control" name="CodigoCliente" />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <label>Tipo de Operación</label>
+            <select class="form-select" name="TipoOperacion">
+                <option value="">Seleccione...</option>
+                <option value="Crédito">Crédito</option>
+                <option value="Préstamo">Préstamo</option>
+                <option value="Compra">Compra</option>
+            </select>
+        </div>
+        <div class="col-md-4 mb-3">
+            <label>Monto de la Operación</label>
+            <input type="number" step="0.01" class="form-control" name="MontoOperacion" />
+        </div>
+        <div class="col-md-4 mb-3">
+            <label>Fecha de la Operación</label>
+            <input type="date" class="form-control" name="FechaOperacion" />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <label>Estado de Pago</label>
+            <select class="form-select" name="EstadoPago">
+                <option value="">Seleccione...</option>
+                <option value="Pendiente">Pendiente</option>
+                <option value="Pagado">Pagado</option>
+                <option value="Vencido">Vencido</option>
+            </select>
+        </div>
+        <div class="col-md-4 mb-3">
+            <label>Producto / Servicio</label>
+            <input class="form-control" name="ProductoServicio" />
+        </div>
+        <div class="col-md-4 mb-3">
+            <label>Días de Crédito</label>
+            <input type="number" class="form-control" name="DiasCredito" />
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label>Observaciones</label>
+        <textarea class="form-control" name="Observaciones" rows="3"></textarea>
+    </div>
+
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">Guardar en Historial</button>
+        <button type="reset" class="btn btn-secondary">Limpiar Campos</button>
+    </div>
+</form>
+
+@if (Model != null && Model.Any())
+{
+    <div class="mt-4 p-3 border rounded bg-white" style="max-height: 250px; overflow-y: auto;">
+        <h4>Historial Crediticio Guardado</h4>
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>DNI</th>
+                    <th>Código</th>
+                    <th>Tipo Operación</th>
+                    <th>Monto</th>
+                    <th>Fecha</th>
+                    <th>Estado</th>
+                    <th>Producto/Servicio</th>
+                    <th>Días</th>
+                    <th>Observaciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.NombreCliente</td>
+                        <td>@item.DniCliente</td>
+                        <td>@item.CodigoCliente</td>
+                        <td>@item.TipoOperacion</td>
+                        <td>@item.MontoOperacion</td>
+                        <td>@item.FechaOperacion.ToShortDateString()</td>
+                        <td>@item.EstadoPago</td>
+                        <td>@item.ProductoServicio</td>
+                        <td>@item.DiasCredito</td>
+                        <td>@item.Observaciones</td>
+                        <td>
+                            <a asp-action="EditarHistorial" asp-route-id="@item.Id" class="btn btn-sm btn-primary">
+                                ✏️ Editar
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

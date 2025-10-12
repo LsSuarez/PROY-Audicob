@@ -50,6 +50,15 @@
                                     </a>
                                 </li>
                             }
+                            @* --- ASESOR --- *@
+                            @if (User.IsInRole("AsesorCobranza"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Asesor" asp-action="HistorialCredito">
+                                        Historial crediticio
+                                    </a>
+                                </li>
+                            }
 
                             @* --- SUPERVISOR --- *@
                             @if (User.IsInRole("Supervisor"))
