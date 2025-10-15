@@ -22,6 +22,7 @@ namespace Audicob.Data
         // public DbSet<HistorialCredito> HistorialCreditos { get; set; }
         // public DbSet<PagoPendiente> PagosPendientes { get; set; }
         public DbSet<FiltroGuardado> FiltrosGuardados { get; set; }
+        public DbSet<HistorialEstadoMora> HistorialEstadosMora { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -42,6 +43,7 @@ namespace Audicob.Data
             modelBuilder.ApplyConfiguration(new AsignacionAsesorConfiguration());
             modelBuilder.ApplyConfiguration(new DeudaConfiguration());
             modelBuilder.ApplyConfiguration(new TransaccionConfiguration());
+            modelBuilder.ApplyConfiguration(new HistorialEstadoMoraConfiguration());
         }
     }
 }

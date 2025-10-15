@@ -63,6 +63,34 @@
                                 </ul>
                             </li>
                         }
+
+                        @if (User.IsInRole("AsesorCobranza"))
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="asesorDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-person-badge"></i> Asesor
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="asesorDropdown">
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Asesor" asp-action="Dashboard">
+                                            <i class="bi bi-speedometer2"></i> Dashboard
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Asesor" asp-action="CambiarEstadoMora">
+                                            <i class="bi bi-arrow-left-right text-warning"></i> <strong>Cambiar Estado de Mora</strong>
+                                            <span class="badge bg-warning text-dark ms-1">HU-30</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Asesor" asp-action="Dashboard">
+                                            <i class="bi bi-people"></i> Mis Clientes Asignados
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
                         
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="Home" asp-action="Ayuda">Ayuda</a>

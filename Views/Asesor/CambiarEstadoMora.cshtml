@@ -1,0 +1,384 @@
+@model Audicob.Models.ViewModels.Asesor.CambiarEstadoMoraViewModel
+@{
+    ViewData["Title"] = "Cambiar Estado de Morosidad";
+    var clientesAsignados = ViewBag.ClientesAsignados as List<Audicob.Models.Cliente> ?? new List<Audicob.Models.Cliente>();
+}
+
+<div class="container-fluid">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Dashboard">Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Cambiar Estado de Morosidad</li>
+        </ol>
+    </nav>
+
+    <!-- Título y descripción -->
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="mb-1">
+                        <i class="fas fa-exchange-alt text-warning me-2"></i>
+                        Cambiar Estado de Morosidad
+                    </h2>
+                    <p class="text-muted mb-0">Modifica el estado de morosidad de tus clientes asignados</p>
+                </div>
+                <a asp-action="Dashboard" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i> Volver al Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulario principal -->
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-8 col-xl-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="fas fa-edit me-2"></i>
+                        Información del Cambio
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="CambiarEstadoMora" method="post" id="formCambioEstado">
+                        <div asp-validation-summary="All" class="alert alert-danger d-none" id="validationSummary"></div>
+                        
+                        <!-- Selección de Cliente -->
+                        <div class="mb-4">
+                            <label for="ClienteId" class="form-label fw-bold">
+                                <i class="fas fa-user me-1"></i> Seleccionar Cliente *
+                            </label>
+                            <select asp-for="ClienteId" class="form-select" id="selectCliente" required>
+                                <option value="">-- Seleccione un cliente --</option>
+                                @foreach (var cliente in clientesAsignados)
+                                {
+                                    <option value="@cliente.Id" 
+                                            data-nombre="@cliente.Nombre" 
+                                            data-documento="@cliente.Documento"
+                                            data-estado="@cliente.EstadoMora"
+                                            data-deuda="@cliente.DeudaTotal.ToString("C")"
+                                            selected="@(Model.ClienteId == cliente.Id)">
+                                        @cliente.Nombre (@cliente.Documento)
+                                    </option>
+                                }
+                            </select>
+                            <span asp-validation-for="ClienteId" class="text-danger"></span>
+                        </div>
+
+                        <!-- Información del Cliente Seleccionado -->
+                        <div id="infoCliente" class="mb-4 @(Model.ClienteId == 0 ? "d-none" : "")">
+                            <div class="card border-info">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0 text-info">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Información del Cliente
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <strong>Nombre:</strong> <span id="clienteNombre">@Model.ClienteNombre</span><br>
+                                            <strong>Documento:</strong> <span id="clienteDocumento">@Model.ClienteDocumento</span>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <strong>Estado Actual:</strong> 
+                                            <span id="estadoActualBadge" class="@Audicob.Models.ViewModels.Asesor.CambiarEstadoMoraViewModel.ObtenerClaseEstado(Model.EstadoActual)">
+                                                @Model.EstadoActual
+                                            </span><br>
+                                            <strong>Deuda Total:</strong> <span id="clienteDeuda"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Estados de Morosidad -->
+                        <div class="mb-4">
+                            <label for="NuevoEstado" class="form-label fw-bold">
+                                <i class="fas fa-flag me-1"></i> Nuevo Estado de Morosidad *
+                            </label>
+                            <select asp-for="NuevoEstado" class="form-select" required>
+                                <option value="">-- Seleccione el nuevo estado --</option>
+                                @foreach (var estado in Audicob.Models.ViewModels.Asesor.CambiarEstadoMoraViewModel.EstadosDisponibles)
+                                {
+                                    <option value="@estado" selected="@(Model.NuevoEstado == estado)">
+                                        @estado
+                                    </option>
+                                }
+                            </select>
+                            <span asp-validation-for="NuevoEstado" class="text-danger"></span>
+                            <div class="form-text">
+                                <small>
+                                    <strong>Estados disponibles:</strong>
+                                    <span class="badge bg-success">Al día</span>
+                                    <span class="badge bg-warning">Temprana</span>
+                                    <span class="badge bg-info">Moderada</span>
+                                    <span class="badge bg-danger">Grave</span>
+                                    <span class="badge bg-dark">Crítica</span>
+                                </small>
+                            </div>
+                        </div>
+
+                        <!-- Motivo del Cambio -->
+                        <div class="mb-4">
+                            <label for="MotivoCambio" class="form-label fw-bold">
+                                <i class="fas fa-comment-alt me-1"></i> Motivo del Cambio *
+                            </label>
+                            <select class="form-select mb-2" id="motivoPredefinido">
+                                <option value="">-- Seleccione un motivo predefinido --</option>
+                                @foreach (var motivo in Audicob.Models.ViewModels.Asesor.CambiarEstadoMoraViewModel.MotivosPredefinidos)
+                                {
+                                    <option value="@motivo">@motivo</option>
+                                }
+                            </select>
+                            <input asp-for="MotivoCambio" class="form-control" placeholder="Especifique el motivo del cambio..." maxlength="200" required />
+                            <span asp-validation-for="MotivoCambio" class="text-danger"></span>
+                            <div class="form-text">
+                                <span id="motivoCounter">@(Model.MotivoCambio?.Length ?? 0)</span>/200 caracteres
+                            </div>
+                        </div>
+
+                        <!-- Observaciones -->
+                        <div class="mb-4">
+                            <label for="Observaciones" class="form-label fw-bold">
+                                <i class="fas fa-sticky-note me-1"></i> Observaciones Adicionales
+                            </label>
+                            <textarea asp-for="Observaciones" class="form-control" rows="3" 
+                                      placeholder="Agregue observaciones adicionales (opcional)..." maxlength="500"></textarea>
+                            <span asp-validation-for="Observaciones" class="text-danger"></span>
+                            <div class="form-text">
+                                <span id="observacionesCounter">@(Model.Observaciones?.Length ?? 0)</span>/500 caracteres
+                            </div>
+                        </div>
+
+                        <!-- Notificación al Cliente -->
+                        <div class="mb-4">
+                            <div class="form-check form-switch">
+                                <input asp-for="EnviarNotificacion" class="form-check-input" type="checkbox" id="enviarNotificacion">
+                                <label class="form-check-label fw-bold" for="enviarNotificacion">
+                                    <i class="fas fa-bell me-1"></i> Enviar notificación automática al cliente
+                                </label>
+                            </div>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle text-info me-1"></i>
+                                El cliente recibirá una notificación sobre el cambio de estado por el medio configurado.
+                            </div>
+                        </div>
+
+                        <!-- Campos ocultos -->
+                        <input type="hidden" asp-for="ClienteNombre" />
+                        <input type="hidden" asp-for="ClienteDocumento" />
+                        <input type="hidden" asp-for="EstadoActual" />
+
+                        <!-- Botones de Acción -->
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="button" class="btn btn-outline-secondary me-md-2" onclick="window.history.back()">
+                                <i class="fas fa-times me-1"></i> Cancelar
+                            </button>
+                            <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#confirmModal" id="btnConfirmar" disabled>
+                                <i class="fas fa-exchange-alt me-1"></i> Cambiar Estado
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmación -->
+    <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title" id="confirmModalLabel">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Confirmar Cambio de Estado
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>¿Está seguro de realizar este cambio?</strong>
+                    </div>
+                    <div id="resumenCambio">
+                        <!-- Se llena dinámicamente con JavaScript -->
+                    </div>
+                    <div class="mt-3">
+                        <small class="text-muted">
+                            <i class="fas fa-clock me-1"></i>
+                            Esta acción será registrada en el historial y no se puede deshacer.
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i> Cancelar
+                    </button>
+                    <button type="submit" form="formCambioEstado" class="btn btn-warning">
+                        <i class="fas fa-check me-1"></i> Confirmar Cambio
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const selectCliente = document.getElementById('selectCliente');
+            const infoCliente = document.getElementById('infoCliente');
+            const btnConfirmar = document.getElementById('btnConfirmar');
+            const motivoPredefinido = document.getElementById('motivoPredefinido');
+            const motivoCambio = document.querySelector('input[name="MotivoCambio"]');
+            const observaciones = document.querySelector('textarea[name="Observaciones"]');
+
+            // Función para actualizar información del cliente
+            function actualizarInfoCliente() {
+                const selectedOption = selectCliente.options[selectCliente.selectedIndex];
+                
+                if (selectedOption.value) {
+                    const nombre = selectedOption.dataset.nombre;
+                    const documento = selectedOption.dataset.documento;
+                    const estado = selectedOption.dataset.estado;
+                    const deuda = selectedOption.dataset.deuda;
+
+                    document.getElementById('clienteNombre').textContent = nombre;
+                    document.getElementById('clienteDocumento').textContent = documento;
+                    document.getElementById('clienteDeuda').textContent = deuda;
+                    
+                    const estadoBadge = document.getElementById('estadoActualBadge');
+                    estadoBadge.textContent = estado;
+                    estadoBadge.className = getClaseEstado(estado);
+
+                    // Actualizar campos ocultos
+                    document.querySelector('input[name="ClienteNombre"]').value = nombre;
+                    document.querySelector('input[name="ClienteDocumento"]').value = documento;
+                    document.querySelector('input[name="EstadoActual"]').value = estado;
+
+                    infoCliente.classList.remove('d-none');
+                } else {
+                    infoCliente.classList.add('d-none');
+                }
+                
+                validarFormulario();
+            }
+
+            // Función para obtener clase CSS del estado
+            function getClaseEstado(estado) {
+                switch(estado) {
+                    case 'Al día': return 'badge bg-success';
+                    case 'Temprana': return 'badge bg-warning';
+                    case 'Moderada': return 'badge bg-info';
+                    case 'Grave': return 'badge bg-danger';
+                    case 'Crítica': return 'badge bg-dark';
+                    default: return 'badge bg-secondary';
+                }
+            }
+
+            // Función para validar formulario
+            function validarFormulario() {
+                const clienteId = selectCliente.value;
+                const nuevoEstado = document.querySelector('select[name="NuevoEstado"]').value;
+                const motivo = motivoCambio.value.trim();
+                const estadoActual = document.querySelector('input[name="EstadoActual"]').value;
+
+                const esValido = clienteId && nuevoEstado && motivo && (estadoActual !== nuevoEstado);
+                btnConfirmar.disabled = !esValido;
+
+                // Mostrar error si intenta cambiar al mismo estado
+                const errorMismoEstado = document.getElementById('errorMismoEstado');
+                if (estadoActual && nuevoEstado && estadoActual === nuevoEstado) {
+                    if (!errorMismoEstado) {
+                        const error = document.createElement('div');
+                        error.id = 'errorMismoEstado';
+                        error.className = 'alert alert-warning mt-2';
+                        error.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i> El nuevo estado debe ser diferente al estado actual.';
+                        document.querySelector('select[name="NuevoEstado"]').parentNode.appendChild(error);
+                    }
+                } else if (errorMismoEstado) {
+                    errorMismoEstado.remove();
+                }
+            }
+
+            // Función para actualizar resumen del cambio
+            function actualizarResumenCambio() {
+                const cliente = document.querySelector('input[name="ClienteNombre"]').value;
+                const documento = document.querySelector('input[name="ClienteDocumento"]').value;
+                const estadoActual = document.querySelector('input[name="EstadoActual"]').value;
+                const nuevoEstado = document.querySelector('select[name="NuevoEstado"]').value;
+                const motivo = motivoCambio.value;
+                const notificacion = document.getElementById('enviarNotificacion').checked;
+
+                const resumen = `
+                    <div class="row">
+                        <div class="col-sm-4"><strong>Cliente:</strong></div>
+                        <div class="col-sm-8">${cliente} (${documento})</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-4"><strong>Estado Actual:</strong></div>
+                        <div class="col-sm-8"><span class="${getClaseEstado(estadoActual)}">${estadoActual}</span></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-4"><strong>Nuevo Estado:</strong></div>
+                        <div class="col-sm-8"><span class="${getClaseEstado(nuevoEstado)}">${nuevoEstado}</span></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-4"><strong>Motivo:</strong></div>
+                        <div class="col-sm-8">${motivo}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-4"><strong>Notificación:</strong></div>
+                        <div class="col-sm-8">${notificacion ? 'Sí' : 'No'}</div>
+                    </div>
+                `;
+                
+                document.getElementById('resumenCambio').innerHTML = resumen;
+            }
+
+            // Función para actualizar contador de caracteres
+            function actualizarContador(input, contador) {
+                const length = input.value.length;
+                const maxLength = input.getAttribute('maxlength');
+                contador.textContent = length;
+                
+                if (length > maxLength * 0.8) {
+                    contador.parentElement.classList.add('text-warning');
+                } else {
+                    contador.parentElement.classList.remove('text-warning');
+                }
+            }
+
+            // Event Listeners
+            selectCliente.addEventListener('change', actualizarInfoCliente);
+            
+            document.querySelector('select[name="NuevoEstado"]').addEventListener('change', validarFormulario);
+            motivoCambio.addEventListener('input', function() {
+                validarFormulario();
+                actualizarContador(this, document.getElementById('motivoCounter'));
+            });
+
+            motivoPredefinido.addEventListener('change', function() {
+                if (this.value) {
+                    motivoCambio.value = this.value;
+                    validarFormulario();
+                    actualizarContador(motivoCambio, document.getElementById('motivoCounter'));
+                }
+            });
+
+            observaciones.addEventListener('input', function() {
+                actualizarContador(this, document.getElementById('observacionesCounter'));
+            });
+
+            btnConfirmar.addEventListener('click', actualizarResumenCambio);
+
+            // Inicialización
+            if (selectCliente.value) {
+                actualizarInfoCliente();
+            }
+        });
+    </script>
+}

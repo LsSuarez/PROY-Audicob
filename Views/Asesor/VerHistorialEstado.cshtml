@@ -1,0 +1,316 @@
+@model Audicob.Models.ViewModels.Asesor.HistorialEstadoMoraViewModel
+@{
+    ViewData["Title"] = $"Historial de Estados - {Model.ClienteNombre}";
+}
+
+<div class="container-fluid">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Dashboard">Dashboard</a></li>
+            <li class="breadcrumb-item"><a asp-action="CambiarEstadoMora">Cambiar Estado</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Historial</li>
+        </ol>
+    </nav>
+
+    <!-- Encabezado -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h2 class="mb-2">
+                        <i class="fas fa-history text-info me-2"></i>
+                        Historial de Estados de Morosidad
+                    </h2>
+                    <p class="text-muted mb-0">Registro completo de cambios de estado para auditoría y seguimiento</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a asp-action="CambiarEstadoMora" asp-route-clienteId="@Model.ClienteId" class="btn btn-warning">
+                        <i class="fas fa-exchange-alt me-1"></i> Cambiar Estado
+                    </a>
+                    <a asp-action="Dashboard" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i> Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Información del Cliente -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-info">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user me-2"></i>
+                        Información del Cliente
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <strong>Nombre:</strong><br>
+                            <span class="text-primary fs-5">@Model.ClienteNombre</span>
+                        </div>
+                        <div class="col-md-3">
+                            <strong>Documento:</strong><br>
+                            <span class="text-muted">@Model.ClienteDocumento</span>
+                        </div>
+                        <div class="col-md-3">
+                            <strong>Estado Actual:</strong><br>
+                            <span class="@Audicob.Models.ViewModels.Asesor.CambiarEstadoMoraViewModel.ObtenerClaseEstado(Model.EstadoActual)">
+                                @Model.EstadoActual
+                            </span>
+                        </div>
+                        <div class="col-md-3">
+                            <strong>Total de Cambios:</strong><br>
+                            <span class="badge bg-secondary fs-6">@Model.TotalCambios cambios</span>
+                        </div>
+                    </div>
+                    
+                    @if (Model.FechaUltimoCambio.HasValue)
+                    {
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <div class="alert alert-light mb-0">
+                                    <i class="fas fa-clock text-info me-1"></i>
+                                    <strong>Último cambio:</strong> @Model.FechaUltimoCambio.Value.ToString("dddd, dd 'de' MMMM 'de' yyyy 'a las' HH:mm", new System.Globalization.CultureInfo("es-ES"))
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Historial de Cambios -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-list-alt me-2"></i>
+                            Historial de Cambios
+                        </h5>
+                        @if (Model.Cambios.Any())
+                        {
+                            <small class="text-muted">
+                                Mostrando @Model.Cambios.Count de @Model.TotalCambios registros
+                            </small>
+                        }
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    @if (!Model.Cambios.Any())
+                    {
+                        <!-- Sin cambios -->
+                        <div class="text-center py-5">
+                            <i class="fas fa-history fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No hay cambios registrados</h5>
+                            <p class="text-muted mb-3">Este cliente aún no tiene historial de cambios de estado de morosidad.</p>
+                            <a asp-action="CambiarEstadoMora" asp-route-clienteId="@Model.ClienteId" class="btn btn-warning">
+                                <i class="fas fa-plus me-1"></i> Registrar primer cambio
+                            </a>
+                        </div>
+                    }
+                    else
+                    {
+                        <!-- Timeline de cambios -->
+                        <div class="timeline-container p-4">
+                            @foreach (var (cambio, index) in Model.Cambios.Select((c, i) => (c, i)))
+                            {
+                                <div class="timeline-item @(index == 0 ? "timeline-item-latest" : "")">
+                                    <div class="timeline-marker">
+                                        @if (index == 0)
+                                        {
+                                            <i class="fas fa-star text-warning"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="fas fa-circle text-muted"></i>
+                                        }
+                                    </div>
+                                    
+                                    <div class="timeline-content">
+                                        <div class="card @(index == 0 ? "border-warning" : "border-light")">
+                                            <div class="card-body">
+                                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                                    <div class="timeline-states">
+                                                        <span class="@Audicob.Models.ViewModels.Asesor.CambiarEstadoMoraViewModel.ObtenerClaseEstado(cambio.EstadoAnterior)">
+                                                            @cambio.EstadoAnterior
+                                                        </span>
+                                                        <i class="fas fa-arrow-right mx-2 text-muted"></i>
+                                                        <span class="@Audicob.Models.ViewModels.Asesor.CambiarEstadoMoraViewModel.ObtenerClaseEstado(cambio.NuevoEstado)">
+                                                            @cambio.NuevoEstado
+                                                        </span>
+                                                    </div>
+                                                    <div class="timeline-meta text-end">
+                                                        <small class="text-muted d-block">
+                                                            <i class="fas fa-calendar me-1"></i>
+                                                            @cambio.FechaCambio.ToString("dd/MM/yyyy")
+                                                        </small>
+                                                        <small class="text-muted d-block">
+                                                            <i class="fas fa-clock me-1"></i>
+                                                            @cambio.FechaCambio.ToString("HH:mm")
+                                                        </small>
+                                                    </div>
+                                                </div>
+
+                                                <div class="timeline-details">
+                                                    <div class="row">
+                                                        <div class="col-md-8">
+                                                            <div class="mb-2">
+                                                                <strong class="text-dark">Motivo:</strong>
+                                                                <span class="text-muted">@cambio.MotivoCambio</span>
+                                                            </div>
+                                                            
+                                                            @if (!string.IsNullOrEmpty(cambio.Observaciones))
+                                                            {
+                                                                <div class="mb-2">
+                                                                    <strong class="text-dark">Observaciones:</strong>
+                                                                    <div class="mt-1 p-2 bg-light rounded">
+                                                                        <small class="text-muted">@cambio.Observaciones</small>
+                                                                    </div>
+                                                                </div>
+                                                            }
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <div class="timeline-user text-md-end">
+                                                                <div class="mb-1">
+                                                                    <i class="fas fa-user-tie text-primary me-1"></i>
+                                                                    <strong>@cambio.UsuarioNombre</strong>
+                                                                </div>
+                                                                <div class="text-muted">
+                                                                    <small>@cambio.TiempoDesdeCambio</small>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                @if (index == 0)
+                                                {
+                                                    <div class="mt-2">
+                                                        <span class="badge bg-warning">
+                                                            <i class="fas fa-star me-1"></i> Cambio más reciente
+                                                        </span>
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+                
+                @if (Model.Cambios.Any())
+                {
+                    <div class="card-footer bg-light">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Los cambios se ordenan del más reciente al más antiguo
+                                </small>
+                            </div>
+                            <div class="col-md-6 text-md-end">
+                                <small class="text-muted">
+                                    Total de registros: <strong>@Model.TotalCambios</strong>
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .timeline-container {
+            position: relative;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-left: 50px;
+            padding-bottom: 30px;
+        }
+
+        .timeline-item:not(:last-child)::before {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 30px;
+            bottom: -30px;
+            width: 2px;
+            background: #dee2e6;
+        }
+
+        .timeline-item-latest:not(:last-child)::before {
+            background: linear-gradient(to bottom, #ffc107 0%, #dee2e6 100%);
+        }
+
+        .timeline-marker {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid #dee2e6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+        }
+
+        .timeline-item-latest .timeline-marker {
+            border-color: #ffc107;
+            background: #fff8e1;
+        }
+
+        .timeline-content {
+            margin-top: 0;
+        }
+
+        .timeline-states {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .timeline-meta {
+            font-size: 0.8rem;
+        }
+
+        .timeline-details {
+            font-size: 0.9rem;
+        }
+
+        .timeline-user {
+            font-size: 0.85rem;
+        }
+
+        @@media (max-width: 768px) {
+            .timeline-item {
+                padding-left: 35px;
+            }
+
+            .timeline-marker {
+                width: 30px;
+                height: 30px;
+                font-size: 0.8rem;
+            }
+
+            .timeline-item:not(:last-child)::before {
+                left: 15px;
+            }
+        }
+    </style>
+}

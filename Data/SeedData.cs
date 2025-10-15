@@ -38,6 +38,9 @@ namespace Audicob.Data.SeedData
 
             // AGREGAR CLIENTES ADICIONALES DE MORA (preservando existentes)
             await AgregarClientesMoraSiNoExisten(db, clienteUser, asesorUser, supervisorUser);
+            
+            // Crear asignaciones de asesores a clientes
+            await CrearAsignacionesAsesores(db, asesorUser);
         }
 
         private static async Task AgregarClientesMoraSiNoExisten(ApplicationDbContext db, ApplicationUser clienteUser, ApplicationUser? asesorUser, ApplicationUser? supervisorUser)
@@ -73,6 +76,7 @@ namespace Audicob.Data.SeedData
                     Nombre = "Cliente Demo",
                     IngresosMensuales = 3500,
                     DeudaTotal = 2500,
+                    EstadoMora = "Al día",
                     FechaActualizacion = DateTime.UtcNow
                 },
                 new Cliente
@@ -81,6 +85,7 @@ namespace Audicob.Data.SeedData
                     Nombre = "María García López",
                     IngresosMensuales = 2200,
                     DeudaTotal = 3800,
+                    EstadoMora = "Temprana",
                     FechaActualizacion = DateTime.UtcNow
                 },
                 new Cliente
@@ -89,6 +94,7 @@ namespace Audicob.Data.SeedData
                     Nombre = "Carlos Mendoza Silva",
                     IngresosMensuales = 4500,
                     DeudaTotal = 1200,
+                    EstadoMora = "Al día",
                     FechaActualizacion = DateTime.UtcNow
                 }
             };
@@ -170,6 +176,7 @@ namespace Audicob.Data.SeedData
                     Nombre = "Sandra Ruiz Martín",
                     IngresosMensuales = 2800,
                     DeudaTotal = 1800,
+                    EstadoMora = "Temprana",
                     FechaActualizacion = DateTime.UtcNow
                 },
                 new Cliente
@@ -178,6 +185,7 @@ namespace Audicob.Data.SeedData
                     Nombre = "Luis Herrera Vega",
                     IngresosMensuales = 3200,
                     DeudaTotal = 2100,
+                    EstadoMora = "Temprana",
                     FechaActualizacion = DateTime.UtcNow
                 },
 
@@ -188,6 +196,7 @@ namespace Audicob.Data.SeedData
                     Nombre = "Roberto Silva Castro",
                     IngresosMensuales = 4200,
                     DeudaTotal = 6500,
+                    EstadoMora = "Moderada",
                     FechaActualizacion = DateTime.UtcNow
                 },
                 new Cliente
@@ -196,6 +205,7 @@ namespace Audicob.Data.SeedData
                     Nombre = "Patricia Herrera Cruz",
                     IngresosMensuales = 3100,
                     DeudaTotal = 4200,
+                    EstadoMora = "Moderada",
                     FechaActualizacion = DateTime.UtcNow
                 },
 
@@ -206,6 +216,7 @@ namespace Audicob.Data.SeedData
                     Nombre = "Miguel Torres Jiménez",
                     IngresosMensuales = 5000,
                     DeudaTotal = 8700,
+                    EstadoMora = "Grave",
                     FechaActualizacion = DateTime.UtcNow
                 },
                 new Cliente
@@ -214,6 +225,7 @@ namespace Audicob.Data.SeedData
                     Nombre = "Carmen Delgado Ramos",
                     IngresosMensuales = 2900,
                     DeudaTotal = 5600,
+                    EstadoMora = "Grave",
                     FechaActualizacion = DateTime.UtcNow
                 },
 
@@ -224,6 +236,7 @@ namespace Audicob.Data.SeedData
                     Nombre = "Fernando Castillo Vargas",
                     IngresosMensuales = 4800,
                     DeudaTotal = 15000,
+                    EstadoMora = "Crítica",
                     FechaActualizacion = DateTime.UtcNow
                 },
                 new Cliente
@@ -232,6 +245,7 @@ namespace Audicob.Data.SeedData
                     Nombre = "Gloria Mendoza Santos",
                     IngresosMensuales = 3300,
                     DeudaTotal = 12300,
+                    EstadoMora = "Crítica",
                     FechaActualizacion = DateTime.UtcNow
                 },
 
@@ -242,6 +256,7 @@ namespace Audicob.Data.SeedData
                     Nombre = "Andrés Guerrero Lima",
                     IngresosMensuales = 6500,
                     DeudaTotal = 25000,
+                    EstadoMora = "Crítica",
                     FechaActualizacion = DateTime.UtcNow
                 },
                 new Cliente
@@ -250,6 +265,7 @@ namespace Audicob.Data.SeedData
                     Nombre = "Victoria Peña Moreno",
                     IngresosMensuales = 1800,
                     DeudaTotal = 7800,
+                    EstadoMora = "Crítica",
                     FechaActualizacion = DateTime.UtcNow
                 }
             };
@@ -319,6 +335,54 @@ namespace Audicob.Data.SeedData
             Console.WriteLine($"   - 8 Pagos variados (validados y pendientes)");
             Console.WriteLine($"   - Rango de mora: 18 a 180 días");
             Console.WriteLine($"   - Rango de montos: S/ 2,226 a S/ 34,375");
+        }
+
+        private static async Task CrearAsignacionesAsesores(ApplicationDbContext db, ApplicationUser? asesorUser)
+        {
+            if (asesorUser == null)
+            {
+                Console.WriteLine("⚠️ No se pudo crear asignaciones: Asesor no encontrado");
+                return;
+            }
+
+            // Verificar si ya existen asignaciones
+            var asignacionesExisten = await db.AsignacionesAsesores.AnyAsync(a => a.AsesorUserId == asesorUser.Id);
+            if (asignacionesExisten)
+            {
+                Console.WriteLine("ℹ️ Las asignaciones de asesor ya existen");
+                return;
+            }
+
+            // Obtener clientes para asignar al asesor
+            var clientes = await db.Clientes
+                .OrderBy(c => c.Id)
+                .Take(8) // Asignar los primeros 8 clientes al asesor
+                .ToListAsync();
+
+            if (!clientes.Any())
+            {
+                Console.WriteLine("⚠️ No hay clientes disponibles para asignar");
+                return;
+            }
+
+            var asignaciones = clientes.Select(cliente => new AsignacionAsesor
+            {
+                ClienteId = cliente.Id,
+                AsesorUserId = asesorUser.Id,
+                AsesorNombre = asesorUser.FullName ?? "Asesor de Cobranza",
+                FechaAsignacion = DateTime.UtcNow
+            }).ToList();
+
+            db.AsignacionesAsesores.AddRange(asignaciones);
+            await db.SaveChangesAsync();
+
+            Console.WriteLine($"✅ Asignaciones creadas exitosamente:");
+            Console.WriteLine($"   - Asesor: {asesorUser.Email}");
+            Console.WriteLine($"   - Clientes asignados: {clientes.Count}");
+            foreach (var cliente in clientes)
+            {
+                Console.WriteLine($"     • {cliente.Nombre} ({cliente.Documento}) - Estado: {cliente.EstadoMora}");
+            }
         }
 
         private static async Task<ApplicationUser> CreateUserAsync(UserManager<ApplicationUser> userManager, string email, string password, string role, string fullName)
