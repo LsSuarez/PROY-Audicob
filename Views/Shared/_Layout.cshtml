@@ -30,6 +30,40 @@
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="Home" asp-action="Index">Inicio</a>
                         </li>
+                        
+                        @if (User.IsInRole("Supervisor"))
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="supervisorDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-shield-check"></i> Supervisor
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="supervisorDropdown">
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Supervisor" asp-action="Dashboard">
+                                            <i class="bi bi-speedometer2"></i> Dashboard
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Supervisor" asp-action="FiltrarMora">
+                                            <i class="bi bi-funnel text-danger"></i> <strong>Filtrar Estado de Mora</strong>
+                                            <span class="badge bg-danger ms-1">HU-29</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Supervisor" asp-action="Index">
+                                            <i class="bi bi-file-earmark-check"></i> Evaluar Clientes
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Supervisor" asp-action="AsignarLineaCredito">
+                                            <i class="bi bi-credit-card"></i> Líneas de Crédito
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
+                        
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="Home" asp-action="Ayuda">Ayuda</a>
                         </li>

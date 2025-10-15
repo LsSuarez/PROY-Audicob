@@ -5,6 +5,8 @@
 }
 <h2 class="mb-4 text-center">Panel de Supervisión - Supervisor</h2>
 
+
+
 <!-- Tarjetas resumen -->
 <div class="row mb-4">
     <div class="col-md-3">
@@ -40,6 +42,88 @@
                 <i class="bi bi-cash fs-1"></i>
                 <h6>Pagos Último Mes</h6>
                 <h3>S/ @Model.TotalPagosUltimoMes.ToString("N2")</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Acciones Rápidas del Supervisor -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-lightning"></i> Acciones Rápidas</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-2">
+                        <a asp-controller="Supervisor" asp-action="FiltrarMora" class="btn btn-outline-danger btn-lg w-100">
+                            <i class="bi bi-funnel fs-4"></i>
+                            <br />
+                            <small><strong>Filtrar Estado de Mora</strong></small>
+                            <br />
+                            <tiny class="text-muted">HU-29</tiny>
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a asp-controller="Supervisor" asp-action="Index" class="btn btn-outline-warning btn-lg w-100">
+                            <i class="bi bi-file-earmark-check fs-4"></i>
+                            <br />
+                            <small><strong>Evaluar Clientes</strong></small>
+                            <br />
+                            <tiny class="text-muted">Gestión</tiny>
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a asp-controller="Supervisor" asp-action="AsignarLineaCredito" class="btn btn-outline-success btn-lg w-100">
+                            <i class="bi bi-credit-card fs-4"></i>
+                            <br />
+                            <small><strong>Líneas de Crédito</strong></small>
+                            <br />
+                            <tiny class="text-muted">Asignar</tiny>
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a asp-controller="Account" asp-action="Register" class="btn btn-outline-primary btn-lg w-100">
+                            <i class="bi bi-person-plus fs-4"></i>
+                            <br />
+                            <small><strong>Crear Usuario</strong></small>
+                            <br />
+                            <tiny class="text-muted">Administración</tiny>
+                        </a>
+                    </div>
+                </div>
+                <!-- Segunda fila de acciones -->
+                <div class="row mt-3">
+                    <div class="col-md-12">
+                        <div class="alert alert-warning">
+                            <h6><i class="bi bi-exclamation-triangle-fill"></i> Resumen de Mora Disponible</h6>
+                            <p class="mb-2">Datos de mora listos para filtrar con ejemplos variados:</p>
+                            <div class="row text-center mb-2">
+                                <div class="col-md-3">
+                                    <span class="badge bg-success fs-6">Temprana: 15-25 días</span>
+                                </div>
+                                <div class="col-md-3">
+                                    <span class="badge bg-warning fs-6">Moderada: 35-42 días</span>
+                                </div>
+                                <div class="col-md-3">
+                                    <span class="badge bg-orange fs-6">Grave: 65-72 días</span>
+                                </div>
+                                <div class="col-md-3">
+                                    <span class="badge bg-danger fs-6">Crítica: 98+ días</span>
+                                </div>
+                            </div>
+                            <div class="text-center">
+                                <small class="text-muted">Incluye montos desde S/ 1,962 hasta S/ 34,375</small>
+                            </div>
+                            <div class="text-center mt-3">
+                                <a asp-controller="Supervisor" asp-action="FiltrarMora" class="btn btn-primary btn-sm">
+                                    <i class="bi bi-funnel"></i> Usar Filtro de Mora Ahora
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
