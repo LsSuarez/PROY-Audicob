@@ -12,7 +12,7 @@ using System.Linq;
 using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
-
+using Audicob.Models.ViewModels.Asesor;
 namespace Audicob.Controllers
 {
     [Authorize(Roles = "AsesorCobranza")]
@@ -56,6 +56,79 @@ namespace Audicob.Controllers
         private static string Html(string? s) => WebUtility.HtmlEncode(s ?? string.Empty);
 
         // =================== Acciones ===================
+
+        // Acción GET para mostrar el formulario de pago
+        [HttpGet]
+        public async Task<IActionResult> RegistrarPago(int clienteId)
+        {
+            var cliente = await _db.Clientes
+                                   .FirstOrDefaultAsync(c => c.Id == clienteId);
+
+            if (cliente == null)
+            {
+                TempData["Error"] = "Cliente no encontrado.";
+                return RedirectToAction(nameof(Dashboard));
+            }
+
+            var model = new RegistrarPagoViewModel
+            {
+                ClienteId = cliente.Id,
+                ClienteNombre = cliente.Nombre,
+                DeudaTotal = cliente.Deuda?.Monto ?? 0, // Si tiene deuda
+                DeudaActual = cliente.Deuda?.Monto ?? 0 // Actual deuda
+            };
+
+            return View(model);
+        }
+
+        // Acción POST para registrar el pago
+        [HttpPost]
+        public async Task<IActionResult> RegistrarPago(RegistrarPagoViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var cliente = await _db.Clientes
+                                       .FirstOrDefaultAsync(c => c.Id == model.ClienteId);
+
+                if (cliente == null || cliente.Deuda == null)
+                {
+                    TempData["Error"] = "Cliente o deuda no encontrada.";
+                    return RedirectToAction(nameof(Dashboard));
+                }
+
+                // Crear la transacción
+                var transaccion = new Transaccion
+                {
+                    ClienteId = cliente.Id,
+                    Monto = model.Monto,
+                    Estado = model.Monto >= cliente.Deuda.Monto ? "PAGADA" : "PARCIALMENTE PAGADA",
+                    Fecha = DateTime.UtcNow,
+                    MetodoPago = model.MetodoPago, // Método de pago elegido
+                    Observaciones = model.Observaciones // Observaciones del pago
+                };
+
+                // Actualizar deuda del cliente
+                if (model.Monto >= cliente.Deuda.Monto)
+                {
+                    cliente.Deuda.Monto = 0; // Deuda completamente pagada
+                }
+                else
+                {
+                    cliente.Deuda.Monto -= model.Monto; // Pago parcial
+                }
+
+                // Guardar transacción y actualizar la deuda
+                _db.Transacciones.Add(transaccion);
+                _db.Clientes.Update(cliente);
+                await _db.SaveChangesAsync();
+
+                TempData["Success"] = "Pago registrado correctamente.";
+                return RedirectToAction(nameof(Dashboard)); // Redirige después del registro del pago
+            }
+
+            // Si la validación falla, mostrar el formulario de nuevo con los errores
+            return View(model);
+        }
 
         // Panel de cobranzas por asignación del asesor
         [HttpGet]
@@ -175,179 +248,66 @@ namespace Audicob.Controllers
         [HttpGet]
         public async Task<IActionResult> ConsultarDeuda(int clienteId)
         {
-            try
+            var cliente = await ObtenerClienteConDeudaAsync(clienteId);
+            if (cliente == null || cliente.Deuda == null)
             {
-                var cliente = await ObtenerClienteConDeudaAsync(clienteId);
-                if (cliente == null || cliente.Deuda == null)
-                {
-                    TempData["Error"] = "Cliente o deuda no encontrada.";
-                    return RedirectToAction(nameof(Dashboard));
-                }
-
-                var deuda = cliente.Deuda;
-                var dias = CalcularDiasAtraso(deuda.FechaVencimiento);
-                var penalidad = Math.Round(CalcularPenalidad(deuda.Monto, dias), 2);
-
-                var model = new DeudaDetalleViewModel
-                {
-                    ClienteId = cliente.Id, // importante para botones
-                    Cliente = cliente.Nombre,
-                    MontoDeuda = deuda.Monto,
-                    DiasAtraso = dias,
-                    PenalidadCalculada = penalidad,
-                    TotalAPagar = deuda.Monto + penalidad,
-                    FechaVencimiento = deuda.FechaVencimiento,
-                    TasaPenalidad = TasaPenalidadMensual
-                };
-
-                return View("ConsultarDeuda", model);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error ConsultarDeuda cliente {ClienteId}", clienteId);
-                TempData["Error"] = "Error al consultar la deuda.";
+                TempData["Error"] = "Cliente o deuda no encontrada.";
                 return RedirectToAction(nameof(Dashboard));
             }
+
+            var deuda = cliente.Deuda;
+            var dias = CalcularDiasAtraso(deuda.FechaVencimiento);
+            var penalidad = Math.Round(CalcularPenalidad(deuda.Monto, dias), 2);
+
+            var model = new DeudaDetalleViewModel
+            {
+                ClienteId = cliente.Id, // importante para botones
+                Cliente = cliente.Nombre,
+                MontoDeuda = deuda.Monto,
+                DiasAtraso = dias,
+                PenalidadCalculada = penalidad,
+                TotalAPagar = deuda.Monto + penalidad,
+                FechaVencimiento = deuda.FechaVencimiento,
+                TasaPenalidad = TasaPenalidadMensual
+            };
+
+            return View("ConsultarDeuda", model);
         }
 
-        // Actualizar penalidad (AC2) — acepta returnUrl para volver a la lista con el mismo filtro
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ActualizarPenalidad(int clienteId, string? returnUrl)
-        {
-            try
-            {
-                var cliente = await _db.Clientes
-                    .Include(c => c.Deuda)
-                    .FirstOrDefaultAsync(c => c.Id == clienteId);
-
-                if (cliente == null || cliente.Deuda == null)
-                {
-                    TempData["Error"] = "Cliente o deuda no encontrada.";
-                    return RedirectToAction(nameof(Dashboard));
-                }
-
-                var deuda = cliente.Deuda;
-                var dias = CalcularDiasAtraso(deuda.FechaVencimiento);
-                var penalidad = Math.Round(CalcularPenalidad(deuda.Monto, dias), 2);
-
-                deuda.PenalidadCalculada = penalidad;
-                deuda.Intereses = penalidad;
-                deuda.TotalAPagar = deuda.Monto + penalidad;
-
-                await _db.SaveChangesAsync();
-
-                TempData["Success"] = $"Penalidad actualizada: S/ {penalidad:N2}";
-
-                if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
-                    return LocalRedirect(returnUrl);
-
-                return RedirectToAction(nameof(ConsultarDeuda), new { clienteId });
-            }
-            catch (DbUpdateConcurrencyException ex)
-            {
-                _logger.LogError(ex, "Concurrencia al actualizar penalidad {ClienteId}", clienteId);
-                TempData["Error"] = "Otro proceso actualizó esta deuda. Intenta de nuevo.";
-                return RedirectToAction(nameof(ConsultarDeuda), new { clienteId });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error al actualizar penalidad {ClienteId}", clienteId);
-                TempData["Error"] = "Error al actualizar la penalidad.";
-                return RedirectToAction(nameof(ConsultarDeuda), new { clienteId });
-            }
-        }
-
-        // Detalle de cálculo paso a paso
-        [HttpGet]
-        public async Task<IActionResult> VerDetallesCalculados(int clienteId)
-        {
-            try
-            {
-                var cliente = await ObtenerClienteConDeudaAsync(clienteId);
-                if (cliente == null || cliente.Deuda == null)
-                {
-                    TempData["Error"] = "Cliente o deuda no encontrada.";
-                    return RedirectToAction(nameof(Dashboard));
-                }
-
-                var deuda = cliente.Deuda;
-                var dias = CalcularDiasAtraso(deuda.FechaVencimiento);
-                var tasaDiaria = TasaPenalidadMensual / DiasPorMes;
-                var penalidad = Math.Round(deuda.Monto * tasaDiaria * dias, 2);
-
-                var model = new CalculoPenalidadDetalleViewModel
-                {
-                    ClienteNombre = cliente.Nombre,
-                    MontoOriginal = deuda.Monto,
-                    FechaVencimiento = deuda.FechaVencimiento,
-                    DiasDeAtraso = dias,
-                    TasaPenalidadMensual = TasaPenalidadMensual,
-                    TasaPenalidadDiaria = tasaDiaria,
-                    PenalidadCalculada = penalidad,
-                    TotalAPagar = deuda.Monto + penalidad,
-                    FormulaTexto = "Penalidad = Monto × TasaDiaria × DíasAtraso",
-                    Paso1 = $"Tasa Mensual = {TasaPenalidadMensual:P2}",
-                    Paso2 = $"Tasa Diaria = {TasaPenalidadMensual:P4} ÷ 30 = {tasaDiaria:P4}",
-                    Paso3 = $"Penalidad = S/ {deuda.Monto:N2} × {tasaDiaria:P4} × {dias}",
-                    Paso4 = $"Penalidad = S/ {penalidad:N2}"
-                };
-
-                ViewBag.ClienteId = clienteId;
-                return View(model);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error VerDetallesCalculados {ClienteId}", clienteId);
-                TempData["Error"] = "Error al calcular los detalles.";
-                return RedirectToAction(nameof(Dashboard));
-            }
-        }
-
-        // Generar comprobante PDF
+        // Método para generar comprobante PDF de la deuda
         [HttpGet]
         public async Task<IActionResult> GenerarComprobante(int clienteId)
         {
-            try
+            var cliente = await ObtenerClienteConDeudaAsync(clienteId);
+            if (cliente == null || cliente.Deuda == null)
             {
-                var cliente = await ObtenerClienteConDeudaAsync(clienteId);
-                if (cliente == null || cliente.Deuda == null)
-                {
-                    TempData["Error"] = "Cliente o deuda no encontrada.";
-                    return RedirectToAction(nameof(Dashboard));
-                }
-
-                var deuda = cliente.Deuda;
-                var dias = CalcularDiasAtraso(deuda.FechaVencimiento);
-                var penalidad = Math.Round(CalcularPenalidad(deuda.Monto, dias), 2);
-
-                var model = new ComprobanteDeudaPdfViewModel
-                {
-                    Cliente = cliente.Nombre,
-                    MontoDeuda = deuda.Monto,
-                    DiasDeAtraso = dias,
-                    TasaPenalidad = TasaPenalidadMensual,
-                    PenalidadCalculada = penalidad,
-                    TotalAPagar = deuda.Monto + penalidad,
-                    FechaVencimiento = deuda.FechaVencimiento
-                };
-
-                var html = GenerateHtml(model);
-                var bytes = GeneratePdf(html);
-
-                var safeName = string.Join("_",
-                    (cliente.Nombre ?? "Cliente").Split(System.IO.Path.GetInvalidFileNameChars()));
-
-                return File(bytes, "application/pdf",
-                    $"Comprobante_{safeName}_{DateTime.Now:yyyyMMddHHmm}.pdf");
+                TempData["Error"] = "Cliente o deuda no encontrada.";
+                return RedirectToAction(nameof(Dashboard));
             }
-            catch (Exception ex)
+
+            var deuda = cliente.Deuda;
+            var dias = CalcularDiasAtraso(deuda.FechaVencimiento);
+            var penalidad = Math.Round(CalcularPenalidad(deuda.Monto, dias), 2);
+
+            var model = new ComprobanteDeudaPdfViewModel
             {
-                // IMPORTANTE: deja el detalle de error real en TempData para depurar rápido
-                _logger.LogError(ex, "Error GenerarComprobante {ClienteId}", clienteId);
-                TempData["Error"] = $"Error al generar el comprobante: {ex.GetType().Name} - {ex.Message}";
-                return RedirectToAction(nameof(ConsultarDeuda), new { clienteId });
-            }
+                Cliente = cliente.Nombre,
+                MontoDeuda = deuda.Monto,
+                DiasDeAtraso = dias,
+                TasaPenalidad = TasaPenalidadMensual,
+                PenalidadCalculada = penalidad,
+                TotalAPagar = deuda.Monto + penalidad,
+                FechaVencimiento = deuda.FechaVencimiento
+            };
+
+            var html = GenerateHtml(model);
+            var bytes = GeneratePdf(html);
+
+            var safeName = string.Join("_",
+                (cliente.Nombre ?? "Cliente").Split(System.IO.Path.GetInvalidFileNameChars()));
+
+            return File(bytes, "application/pdf",
+                $"Comprobante_{safeName}_{DateTime.Now:yyyyMMddHHmm}.pdf");
         }
 
         // =================== PDF helpers ===================
@@ -414,7 +374,6 @@ td {{ padding:10px 8px; border-bottom:1px solid #eee; }}
             }
             catch (Exception ex)
             {
-                // Log del convertidor y re-lanzamos para que el catch del Action maneje TempData + redirect
                 _logger.LogError(ex, "DinkToPdf error: {Message}", ex.Message);
                 throw;
             }

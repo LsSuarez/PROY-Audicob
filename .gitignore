@@ -1,0 +1,127 @@
+## ===============================
+## .NET / ASP.NET Core GitIgnore
+## ===============================
+
+# Compilación de binarios
+bin/
+obj/
+out/
+build/
+[Bb]uild[Ll]og.*
+
+# Archivos del entorno
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Archivos temporales
+*.tmp
+*.temp
+*.log
+*.tlog
+*.cache
+*.pid
+*.gz
+*.zip
+*.tar
+*.rar
+
+# Archivos del sistema operativo
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.DS_Store
+
+# Archivos de publicación
+publish/
+dist/
+wwwroot/dist/
+node_modules/
+
+# Dependencias de cliente
+bower_components/
+jspm_packages/
+wwwroot/lib/
+
+# Configuración de usuario o secretos locales
+appsettings.Development.json
+appsettings.Local.json
+secrets.json
+
+# Archivos del hosting
+*.Publish.xml
+*.PublishProfiles/
+*.pubxml
+*.pubxml.user
+Properties/PublishProfiles/
+
+# Archivos generados por Entity Framework
+Migrations/
+
+# Archivos generados automáticamente
+*.dll
+*.exe
+*.pdb
+*.mdb
+*.db
+*.bak
+
+# Archivos de cobertura y análisis
+*.coverage
+*.coveragexml
+TestResult.xml
+TestResults/
+coverage/
+
+# Archivos de backup o notas locales
+*.bak
+*.old
+*.orig
+*.swp
+*.swn
+*.swo
+
+# Archivos del paquete NuGet
+*.nupkg
+*.snupkg
+*.nuspec
+project.lock.json
+project.fragment.lock.json
+.nuget/
+packages/
+*.props
+*.targets
+
+# Archivos de Docker
+Dockerfile.*
+docker-compose.*
+**/docker-compose.yml
+**/docker-compose.override.yml
+
+# Configuración de Rider o JetBrains
+.idea/
+*.iml
+
+# Logs
+logs/
+*.log
+
+# Archivos temporales del servidor
+wwwroot/uploads/temp/
+temp/
+
+# Configuración de certificados locales
+*.pfx
+*.key
+*.crt
+
+# Configuración específica de Visual Studio Code
+.history/
+.env
+.env.local
+.env.*.local

@@ -19,5 +19,17 @@ namespace Audicob.Models
         public ICollection<EvaluacionCliente> Evaluaciones { get; set; } = new List<EvaluacionCliente>();
         public AsignacionAsesor? AsignacionAsesor { get; set; }
         public Deuda? Deuda { get; set; }
+
+        // Método para obtener el total de los pagos realizados en los últimos 30 días
+        public decimal PagosRecientes()
+        {
+            // Definir un rango de 30 días hacia atrás
+            var fechaLimite = DateTime.UtcNow.AddMonths(-1);
+
+            // Filtrar los pagos recientes (últimos 30 días) y calcular el total
+            var pagosRecientes = Pagos.Where(p => p.Fecha >= fechaLimite)
+                                      .Sum(p => p.Monto);
+            return pagosRecientes;
+        }
     }
 }

@@ -1,0 +1,96 @@
+@model Audicob.Models.ViewModels.Asesor.RegistrarPagoViewModel
+
+@{
+    Layout = "_Layout";
+}
+
+<div class="container">
+    <!-- Cabecera de cliente -->
+    <div class="header">
+        <div class="client-info">
+            <h2>Sistema de Cobranza</h2>
+            <p>Registrar Pago de Deuda</p>
+        </div>
+        <div class="client-details">
+            <div class="client-name">
+                <strong>Cliente:</strong> @Model.ClienteNombre
+            </div>
+            <div class="client-id">
+                <strong>ID Cliente:</strong> @Model.ClienteId
+            </div>
+            <div class="client-debt">
+                <strong>Deuda Total:</strong> S/ @Model.DeudaTotal.ToString("F2")
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulario de pago -->
+    <div class="payment-form">
+        <h3>Registrar Pago</h3>
+        <form method="post" asp-action="RegistrarPago">
+            <input type="hidden" name="ClienteId" value="@Model.ClienteId" />
+            
+            <div>
+                <label for="Monto">Monto del Pago:</label>
+                <input type="number" id="Monto" name="Monto" value="@Model.Monto" required step="0.01" min="0" />
+                @if (TempData["Error"] != null) {
+                    <div class="text-danger">@TempData["Error"]</div>
+                }
+            </div>
+
+            <div>
+                <label for="MetodoPago">Método de Pago:</label>
+                <input type="text" id="MetodoPago" name="MetodoPago" value="@Model.MetodoPago" required />
+                @if (TempData["Error"] != null) {
+                    <div class="text-danger">@TempData["Error"]</div>
+                }
+            </div>
+
+            <div>
+                <label for="Observaciones">Observaciones:</label>
+                <textarea id="Observaciones" name="Observaciones" rows="4" cols="50">@Model.Observaciones</textarea>
+            </div>
+
+            <button type="submit" class="btn btn-success">Confirmar Pago</button>
+        </form>
+    </div>
+</div>
+
+<!-- Estilos -->
+<style>
+    .container {
+        width: 80%;
+        margin: 0 auto;
+        font-family: Arial, sans-serif;
+    }
+    .header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+    }
+    .client-info h2 {
+        margin: 0;
+        color: #2c3e50;
+    }
+    .client-details div {
+        margin: 5px 0;
+    }
+    .payment-form {
+        margin-top: 30px;
+        padding: 10px;
+        border: 1px solid #e0e0e0;
+        border-radius: 5px;
+    }
+    .btn {
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        border: none;
+        border-radius: 5px;
+    }
+    .btn-success {
+        background-color: #28a745;
+        color: white;
+        margin-right: 10px;
+    }
+</style>

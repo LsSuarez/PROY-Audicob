@@ -11,8 +11,14 @@ namespace Audicob.Models.ViewModels.Cobranza
         // Total de la deuda en la cartera del asesor
         public decimal TotalDeudaCartera { get; set; }
 
+        // Total de pagos recientes realizados
+        public decimal TotalPagosRecientes { get; set; }  // Agregado para pagos recientes
+
         // Lista de clientes asignados con sus respectivas deudas
         public List<ClienteDeudaViewModel> Clientes { get; set; } = new List<ClienteDeudaViewModel>();
+
+        // Lista de clientes asignados (modificado para incluir ClienteResumen)
+        public List<ClienteResumen> ClientesAsignados { get; set; } = new List<ClienteResumen>();
 
         // Total de usuarios que pertenecen al rol del asesor (opcional)
         public int TotalUsuarios { get; set; }
@@ -27,6 +33,7 @@ namespace Audicob.Models.ViewModels.Cobranza
         public CobranzaDashboardViewModel()
         {
             Clientes = new List<ClienteDeudaViewModel>();
+            ClientesAsignados = new List<ClienteResumen>(); // Aseguramos que la lista esté inicializada
             UsuariosPorRol = new List<string>();
         }
 

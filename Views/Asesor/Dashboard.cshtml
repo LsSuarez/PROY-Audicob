@@ -1,4 +1,5 @@
 @model Audicob.Models.ViewModels.Asesor.AsesorDashboardViewModel
+
 @{
     ViewData["Title"] = "Panel Asesor";
 }
@@ -33,24 +34,23 @@
     </div>
 </div>
 
-<!-- Gráfico de deudas por cliente -->
-<div class="card shadow-sm mb-4">
-    <div class="card-header bg-secondary text-white">Deuda por Cliente</div>
-    <div class="card-body">
-        <canvas id="deudaChart"></canvas>
-    </div>
-</div>
+<!-- Formulario de búsqueda -->
+<form method="get" action="@Url.Action("Dashboard", "Asesor")" class="form-inline mb-4">
+    <input type="text" name="searchTerm" value="@Model.SearchTerm" class="form-control" placeholder="Buscar cliente por nombre o DNI" />
+    <button type="submit" class="btn btn-primary ml-2">Buscar</button>
+</form>
 
-<!-- Tabla de clientes asignados -->
+<!-- Detalle de Clientes Asignados -->
 <h4 class="mt-5">Detalle de Clientes Asignados</h4>
 <table class="table table-bordered table-striped">
     <thead class="table-dark">
         <tr>
-            <th>Nombre</th>
+            <th>Cliente</th>
             <th>Documento</th>
             <th>Deuda</th>
             <th>Ingresos</th>
             <th>Última Actualización</th>
+            <th>Acciones</th>
         </tr>
     </thead>
     <tbody>
@@ -62,6 +62,11 @@
             <td>S/ @cliente.Deuda</td>
             <td>S/ @cliente.IngresosMensuales</td>
             <td>@cliente.FechaActualizacion.ToShortDateString()</td>
+            <td>
+                <a href="@Url.Action("RegistrarPago", "Cobranza", new { clienteId = cliente.ClienteId })" class="btn btn-warning btn-sm">
+                    Registrar Pago
+                </a>
+            </td>
         </tr>
     }
     </tbody>

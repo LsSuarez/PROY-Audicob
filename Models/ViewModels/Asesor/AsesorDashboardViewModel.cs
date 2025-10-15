@@ -13,6 +13,9 @@ namespace Audicob.Models.ViewModels.Asesor
 
         // Detalle de clientes asignados
         public List<ClienteResumen> ClientesAsignados { get; set; } = new();
+
+        // Propiedad para el término de búsqueda en la barra de búsqueda
+        public string SearchTerm { get; set; } = string.Empty;
     }
 
     public class ClienteResumen
@@ -22,5 +25,6 @@ namespace Audicob.Models.ViewModels.Asesor
         public decimal Deuda { get; set; }
         public decimal IngresosMensuales { get; set; }
         public DateTime FechaActualizacion { get; set; }
+        public int ClienteId { get; set; }
     }
 }

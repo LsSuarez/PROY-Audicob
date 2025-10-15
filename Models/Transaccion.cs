@@ -25,5 +25,8 @@ namespace Audicob.Models
 
         // Propiedad opcional para el método de pago
         public string MetodoPago { get; set; } = string.Empty;  // Ejemplo: "Tarjeta de Crédito", "Transferencia"
+
+        // Agregar la propiedad Observaciones para registrar notas adicionales
+        public string? Observaciones { get; set; } = string.Empty; // Propiedad opcional
     }
 }
