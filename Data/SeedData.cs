@@ -37,355 +37,288 @@ namespace Audicob.Data.SeedData
             var clienteUser = await CreateUserAsync(userManager, "cliente@audicob.com", "Cliente123!", "Cliente", "Cliente Demo");
 
             // AGREGAR CLIENTES ADICIONALES DE MORA (preservando existentes)
-            await AgregarClientesMoraSiNoExisten(db, clienteUser, asesorUser);
+            await AgregarClientesMoraSiNoExisten(db, clienteUser, asesorUser, supervisorUser);
         }
 
-        private static async Task AgregarClientesMoraSiNoExisten(ApplicationDbContext db, ApplicationUser clienteUser, ApplicationUser? asesorUser)
+        private static async Task AgregarClientesMoraSiNoExisten(ApplicationDbContext db, ApplicationUser clienteUser, ApplicationUser? asesorUser, ApplicationUser? supervisorUser)
         {
-            var clientesNuevos = new List<Cliente>();
-            
-            // Lista de clientes a crear/verificar
-            var datosClientes = new[]
+            // Verificar si ya existen clientes base (los originales del proyecto)
+            var clienteExiste1 = await db.Clientes.AnyAsync(c => c.Documento == "12345678");
+            var clienteExiste2 = await db.Clientes.AnyAsync(c => c.Documento == "87654321");
+            var clienteExiste3 = await db.Clientes.AnyAsync(c => c.Documento == "11122233");
+
+            // Si no existen los clientes originales, crearlos primero
+            if (!clienteExiste1 || !clienteExiste2 || !clienteExiste3)
             {
-                new { Doc = "23456789", Nombre = "Sandra Ruiz Vega", Ingresos = 2800m, Deuda = 1800m },
-                new { Doc = "34567890", Nombre = "Roberto Silva Muñoz", Ingresos = 4200m, Deuda = 6500m },
-                new { Doc = "45678901", Nombre = "Patricia Herrera Cruz", Ingresos = 3100m, Deuda = 4200m },
-                new { Doc = "56789012", Nombre = "Miguel Torres Jiménez", Ingresos = 5000m, Deuda = 8700m },
-                new { Doc = "67890123", Nombre = "Carmen Delgado Ramos", Ingresos = 2900m, Deuda = 5600m },
-                new { Doc = "78901234", Nombre = "Fernando Castillo Vargas", Ingresos = 4800m, Deuda = 15000m },
-                new { Doc = "89012345", Nombre = "Gloria Mendoza Soto", Ingresos = 3300m, Deuda = 12300m },
-                new { Doc = "90123456", Nombre = "Andrés Guerrero Lima", Ingresos = 6500m, Deuda = 25000m },
-                new { Doc = "01234567", Nombre = "Victoria Peña Moreno", Ingresos = 1800m, Deuda = 7800m }
+                await CrearClientesOriginales(db, clienteUser, asesorUser, supervisorUser);
+            }
+
+            // Verificar si existen los nuevos clientes de mora
+            var nuevosClientesExisten = await db.Clientes.AnyAsync(c => 
+                c.Documento == "23456789" || c.Documento == "34567890" || c.Documento == "45678901");
+
+            if (!nuevosClientesExisten)
+            {
+                await CrearNuevosClientesMora(db);
+            }
+        }
+
+        private static async Task CrearClientesOriginales(ApplicationDbContext db, ApplicationUser clienteUser, ApplicationUser? asesorUser, ApplicationUser? supervisorUser)
+        {
+            var clientesOriginales = new List<Cliente>
+            {
+                new Cliente
+                {
+                    Documento = "12345678",
+                    Nombre = "Cliente Demo",
+                    IngresosMensuales = 3500,
+                    DeudaTotal = 2500,
+                    FechaActualizacion = DateTime.UtcNow
+                },
+                new Cliente
+                {
+                    Documento = "87654321",
+                    Nombre = "María García López",
+                    IngresosMensuales = 2200,
+                    DeudaTotal = 3800,
+                    FechaActualizacion = DateTime.UtcNow
+                },
+                new Cliente
+                {
+                    Documento = "11122233",
+                    Nombre = "Carlos Mendoza Silva",
+                    IngresosMensuales = 4500,
+                    DeudaTotal = 1200,
+                    FechaActualizacion = DateTime.UtcNow
+                }
             };
 
-            foreach (var datos in datosClientes)
+            db.Clientes.AddRange(clientesOriginales);
+            await db.SaveChangesAsync();
+
+            // Crear deudas para clientes originales
+            var deudasOriginales = new List<Deuda>
             {
-                var clienteExiste = await db.Clientes.AnyAsync(c => c.Documento == datos.Doc);
-                if (!clienteExiste)
+                new Deuda
                 {
-                    var nuevoCliente = new Cliente
-                    {
-                        Documento = datos.Doc,
-                        Nombre = datos.Nombre,
-                        IngresosMensuales = datos.Ingresos,
-                        DeudaTotal = datos.Deuda,
-                        FechaActualizacion = DateTime.UtcNow
-                    };
-                    clientesNuevos.Add(nuevoCliente);
+                    ClienteId = clientesOriginales[0].Id,
+                    Monto = 2500,
+                    Intereses = 50,
+                    PenalidadCalculada = 25,
+                    TotalAPagar = 2575,
+                    FechaVencimiento = DateTime.UtcNow.AddDays(-30)
+                },
+                new Deuda
+                {
+                    ClienteId = clientesOriginales[1].Id,
+                    Monto = 3800,
+                    Intereses = 76,
+                    PenalidadCalculada = 38,
+                    TotalAPagar = 3914,
+                    FechaVencimiento = DateTime.UtcNow.AddDays(-45)
+                },
+                new Deuda
+                {
+                    ClienteId = clientesOriginales[2].Id,
+                    Monto = 1200,
+                    Intereses = 24,
+                    PenalidadCalculada = 12,
+                    TotalAPagar = 1236,
+                    FechaVencimiento = DateTime.UtcNow.AddDays(-10)
                 }
-            }
+            };
 
-            if (clientesNuevos.Any())
+            db.Deudas.AddRange(deudasOriginales);
+
+            // Crear pagos para clientes originales
+            var pagosOriginales = new List<Pago>
             {
-                db.Clientes.AddRange(clientesNuevos);
-                await db.SaveChangesAsync();
-                Console.WriteLine($"✅ Se agregaron {clientesNuevos.Count} nuevos clientes");
+                new Pago 
+                { 
+                    ClienteId = clientesOriginales[0].Id, 
+                    Fecha = DateTime.UtcNow.AddDays(-20), 
+                    Monto = 500, 
+                    Validado = true, 
+                    Estado = "Cancelado", 
+                    Observacion = "Pago parcial" 
+                },
+                new Pago 
+                { 
+                    ClienteId = clientesOriginales[1].Id, 
+                    Fecha = DateTime.UtcNow.AddDays(-50), 
+                    Monto = 1000, 
+                    Validado = true, 
+                    Estado = "Cancelado", 
+                    Observacion = "Abono anterior" 
+                }
+            };
 
-                // Crear deudas para los nuevos clientes
-                await CrearDeudasParaNuevosClientes(db, clientesNuevos);
-                
-                // Crear pagos para los nuevos clientes  
-                await CrearPagosParaNuevosClientes(db, clientesNuevos);
+            db.Pagos.AddRange(pagosOriginales);
+            await db.SaveChangesAsync();
 
-                Console.WriteLine("✅ Nuevos datos de mora creados exitosamente");
-            }
-            else
-            {
-                Console.WriteLine("ℹ️ Todos los clientes de mora ya existen");
-            }
+            Console.WriteLine("✅ Clientes originales restaurados exitosamente");
         }
 
-        private static async Task CrearDeudasParaNuevosClientes(ApplicationDbContext db, List<Cliente> clientes)
+        private static async Task CrearNuevosClientesMora(ApplicationDbContext db)
         {
-            var deudas = new List<Deuda>();
-            var diasMora = new[] { -25, -42, -35, -72, -65, -105, -98, -150, -180 };
-            var montos = new[] { 1800m, 6500m, 4200m, 8700m, 5600m, 15000m, 12300m, 25000m, 7800m };
-
-            for (int i = 0; i < clientes.Count && i < diasMora.Length; i++)
+            var nuevosClientes = new List<Cliente>
             {
-                var monto = montos[i];
-                var intereses = monto * 0.15m;
-                var penalidad = intereses * 0.5m;
-
-                deudas.Add(new Deuda
-                {
-                    ClienteId = clientes[i].Id,
-                    Monto = monto,
-                    Intereses = intereses,
-                    PenalidadCalculada = penalidad,
-                    TotalAPagar = monto + intereses + penalidad,
-                    FechaVencimiento = DateTime.UtcNow.AddDays(diasMora[i])
-                });
-            }
-
-            if (deudas.Any())
-            {
-                db.Deudas.AddRange(deudas);
-                await db.SaveChangesAsync();
-            }
-        }
-
-        private static async Task CrearPagosParaNuevosClientes(ApplicationDbContext db, List<Cliente> clientes)
-        {
-            if (clientes.Count >= 3)
-            {
-                var pagos = new List<Pago>
-                {
-                    new Pago { ClienteId = clientes[0].Id, Fecha = DateTime.UtcNow.AddDays(-20), Monto = 600, Validado = true, Estado = "Cancelado" },
-                    new Pago { ClienteId = clientes[1].Id, Fecha = DateTime.UtcNow.AddDays(-50), Monto = 1200, Validado = true, Estado = "Cancelado" },
-                    new Pago { ClienteId = clientes[2].Id, Fecha = DateTime.UtcNow.AddDays(-5), Monto = 1500, Validado = false, Estado = "Pendiente" }
-                };
-
-                db.Pagos.AddRange(pagos);
-                await db.SaveChangesAsync();
-            }
-
-                // MORA TEMPRANA (1-29 días)
-                var cliente2 = new Cliente
+                // MORA TEMPRANA (1-30 días)
+                new Cliente
                 {
                     Documento = "23456789",
-                    Nombre = "Sandra Ruiz Vega",
+                    Nombre = "Sandra Ruiz Martín",
                     IngresosMensuales = 2800,
-                    DeudaTotal = 1800
-                };
+                    DeudaTotal = 1800,
+                    FechaActualizacion = DateTime.UtcNow
+                },
+                new Cliente
+                {
+                    Documento = "32145698",
+                    Nombre = "Luis Herrera Vega",
+                    IngresosMensuales = 3200,
+                    DeudaTotal = 2100,
+                    FechaActualizacion = DateTime.UtcNow
+                },
 
-                // MORA MODERADA (30-59 días)
-                var cliente3 = new Cliente
+                // MORA MODERADA (31-60 días)
+                new Cliente
                 {
                     Documento = "34567890",
-                    Nombre = "Roberto Silva Muñoz",
+                    Nombre = "Roberto Silva Castro",
                     IngresosMensuales = 4200,
-                    DeudaTotal = 6500
-                };
-
-                var cliente4 = new Cliente
+                    DeudaTotal = 6500,
+                    FechaActualizacion = DateTime.UtcNow
+                },
+                new Cliente
                 {
                     Documento = "45678901",
                     Nombre = "Patricia Herrera Cruz",
                     IngresosMensuales = 3100,
-                    DeudaTotal = 4200
-                };
+                    DeudaTotal = 4200,
+                    FechaActualizacion = DateTime.UtcNow
+                },
 
-                // MORA GRAVE (60-89 días)
-                var cliente5 = new Cliente
+                // MORA GRAVE (61-90 días)
+                new Cliente
                 {
                     Documento = "56789012",
                     Nombre = "Miguel Torres Jiménez",
                     IngresosMensuales = 5000,
-                    DeudaTotal = 8700
-                };
-
-                var cliente6 = new Cliente
+                    DeudaTotal = 8700,
+                    FechaActualizacion = DateTime.UtcNow
+                },
+                new Cliente
                 {
                     Documento = "67890123",
                     Nombre = "Carmen Delgado Ramos",
                     IngresosMensuales = 2900,
-                    DeudaTotal = 5600
-                };
+                    DeudaTotal = 5600,
+                    FechaActualizacion = DateTime.UtcNow
+                },
 
-                // MORA CRÍTICA (90+ días)
-                var cliente7 = new Cliente
+                // MORA CRÍTICA (+90 días)
+                new Cliente
                 {
                     Documento = "78901234",
                     Nombre = "Fernando Castillo Vargas",
                     IngresosMensuales = 4800,
-                    DeudaTotal = 15000
-                };
-
-                var cliente8 = new Cliente
+                    DeudaTotal = 15000,
+                    FechaActualizacion = DateTime.UtcNow
+                },
+                new Cliente
                 {
                     Documento = "89012345",
-                    Nombre = "Gloria Mendoza Soto",
+                    Nombre = "Gloria Mendoza Santos",
                     IngresosMensuales = 3300,
-                    DeudaTotal = 12300
-                };
+                    DeudaTotal = 12300,
+                    FechaActualizacion = DateTime.UtcNow
+                },
 
-                // CASOS EXTREMOS
-                var cliente9 = new Cliente
+                // CASOS EXTREMOS (+120 días)
+                new Cliente
                 {
                     Documento = "90123456",
                     Nombre = "Andrés Guerrero Lima",
                     IngresosMensuales = 6500,
-                    DeudaTotal = 25000
-                };
-
-                var cliente10 = new Cliente
+                    DeudaTotal = 25000,
+                    FechaActualizacion = DateTime.UtcNow
+                },
+                new Cliente
                 {
                     Documento = "01234567",
                     Nombre = "Victoria Peña Moreno",
                     IngresosMensuales = 1800,
-                    DeudaTotal = 7800
-                };
-
-                db.Clientes.AddRange(cliente1, cliente2, cliente3, cliente4, cliente5, 
-                                   cliente6, cliente7, cliente8, cliente9, cliente10);
-                await db.SaveChangesAsync();
-
-                // DEUDAS CON DIFERENTES NIVELES DE MORA
-                var deudas = new List<Deuda>
-                {
-                    // MORA TEMPRANA - Cliente Demo (15 días)
-                    new Deuda
-                    {
-                        ClienteId = cliente1.Id,
-                        Monto = 2500,
-                        Intereses = 125,
-                        PenalidadCalculada = 62.50m,
-                        TotalAPagar = 2687.50m,
-                        FechaVencimiento = DateTime.UtcNow.AddDays(-15)
-                    },
-                    // MORA TEMPRANA - Sandra Ruiz (25 días)
-                    new Deuda
-                    {
-                        ClienteId = cliente2.Id,
-                        Monto = 1800,
-                        Intereses = 108,
-                        PenalidadCalculada = 54.00m,
-                        TotalAPagar = 1962.00m,
-                        FechaVencimiento = DateTime.UtcNow.AddDays(-25)
-                    },
-                    // MORA MODERADA - Roberto Silva (42 días)
-                    new Deuda
-                    {
-                        ClienteId = cliente3.Id,
-                        Monto = 6500,
-                        Intereses = 650,
-                        PenalidadCalculada = 325.00m,
-                        TotalAPagar = 7475.00m,
-                        FechaVencimiento = DateTime.UtcNow.AddDays(-42)
-                    },
-                    // MORA MODERADA - Patricia Herrera (35 días)
-                    new Deuda
-                    {
-                        ClienteId = cliente4.Id,
-                        Monto = 4200,
-                        Intereses = 504,
-                        PenalidadCalculada = 252.00m,
-                        TotalAPagar = 4956.00m,
-                        FechaVencimiento = DateTime.UtcNow.AddDays(-35)
-                    },
-                    // MORA GRAVE - Miguel Torres (72 días)
-                    new Deuda
-                    {
-                        ClienteId = cliente5.Id,
-                        Monto = 8700,
-                        Intereses = 1305,
-                        PenalidadCalculada = 652.50m,
-                        TotalAPagar = 10657.50m,
-                        FechaVencimiento = DateTime.UtcNow.AddDays(-72)
-                    },
-                    // MORA GRAVE - Carmen Delgado (65 días)
-                    new Deuda
-                    {
-                        ClienteId = cliente6.Id,
-                        Monto = 5600,
-                        Intereses = 896,
-                        PenalidadCalculada = 448.00m,
-                        TotalAPagar = 6944.00m,
-                        FechaVencimiento = DateTime.UtcNow.AddDays(-65)
-                    },
-                    // MORA CRÍTICA - Fernando Castillo (105 días)
-                    new Deuda
-                    {
-                        ClienteId = cliente7.Id,
-                        Monto = 15000,
-                        Intereses = 3000,
-                        PenalidadCalculada = 1500.00m,
-                        TotalAPagar = 19500.00m,
-                        FechaVencimiento = DateTime.UtcNow.AddDays(-105)
-                    },
-                    // MORA CRÍTICA - Gloria Mendoza (98 días)
-                    new Deuda
-                    {
-                        ClienteId = cliente8.Id,
-                        Monto = 12300,
-                        Intereses = 2214,
-                        PenalidadCalculada = 1107.00m,
-                        TotalAPagar = 15621.00m,
-                        FechaVencimiento = DateTime.UtcNow.AddDays(-98)
-                    },
-                    // CASOS EXTREMOS - Andrés Guerrero (150 días)
-                    new Deuda
-                    {
-                        ClienteId = cliente9.Id,
-                        Monto = 25000,
-                        Intereses = 6250,
-                        PenalidadCalculada = 3125.00m,
-                        TotalAPagar = 34375.00m,
-                        FechaVencimiento = DateTime.UtcNow.AddDays(-150)
-                    },
-                    // CASOS EXTREMOS - Victoria Peña (180 días)
-                    new Deuda
-                    {
-                        ClienteId = cliente10.Id,
-                        Monto = 7800,
-                        Intereses = 2106,
-                        PenalidadCalculada = 1053.00m,
-                        TotalAPagar = 10959.00m,
-                        FechaVencimiento = DateTime.UtcNow.AddDays(-180)
-                    }
-                };
-
-                db.Deudas.AddRange(deudas);
-
-                // PAGOS VARIADOS DE EJEMPLO
-                db.Pagos.AddRange(
-                    // Pagos de clientes con mora temprana
-                    new Pago { ClienteId = cliente1.Id, Fecha = DateTime.UtcNow.AddDays(-10), Monto = 800, Validado = true, Estado = "Cancelado", Observacion = "Pago parcial reciente" },
-                    new Pago { ClienteId = cliente2.Id, Fecha = DateTime.UtcNow.AddDays(-20), Monto = 600, Validado = true, Estado = "Cancelado", Observacion = "Abono" },
-                    
-                    // Pagos de clientes con mora moderada
-                    new Pago { ClienteId = cliente3.Id, Fecha = DateTime.UtcNow.AddDays(-50), Monto = 1200, Validado = true, Estado = "Cancelado", Observacion = "Pago anterior al vencimiento" },
-                    new Pago { ClienteId = cliente4.Id, Fecha = DateTime.UtcNow.AddDays(-45), Monto = 900, Validado = true, Estado = "Cancelado", Observacion = "Último pago registrado" },
-                    
-                    // Pagos de clientes con mora grave
-                    new Pago { ClienteId = cliente5.Id, Fecha = DateTime.UtcNow.AddDays(-80), Monto = 2000, Validado = true, Estado = "Cancelado", Observacion = "Pago significativo anterior" },
-                    
-                    // Pagos pendientes (no validados)
-                    new Pago { ClienteId = cliente6.Id, Fecha = DateTime.UtcNow.AddDays(-5), Monto = 1500, Validado = false, Estado = "Pendiente", Observacion = "Pago pendiente de validación" },
-                    new Pago { ClienteId = cliente7.Id, Fecha = DateTime.UtcNow.AddDays(-2), Monto = 3000, Validado = false, Estado = "Pendiente", Observacion = "Pago grande pendiente" },
-                    
-                    // Casos sin pagos recientes (mora crítica)
-                    new Pago { ClienteId = cliente9.Id, Fecha = DateTime.UtcNow.AddDays(-200), Monto = 5000, Validado = true, Estado = "Cancelado", Observacion = "Último pago hace mucho tiempo" }
-                );
-
-
-                        new AsignacionAsesor
-                        {
-                            AsesorUserId = asesorUser.Id,
-                            AsesorNombre = asesorUser.FullName,
-                            ClienteId = cliente3.Id,
-                            FechaAsignacion = DateTime.UtcNow
-                        },
-                        new AsignacionAsesor
-                        {
-                            AsesorUserId = asesorUser.Id,
-                            AsesorNombre = asesorUser.FullName,
-                            ClienteId = cliente4.Id,
-                            FechaAsignacion = DateTime.UtcNow
-                        },
-                        new AsignacionAsesor
-                        {
-                            AsesorUserId = asesorUser.Id,
-                            AsesorNombre = asesorUser.FullName,
-                            ClienteId = cliente5.Id,
-                            FechaAsignacion = DateTime.UtcNow
-                        }
-                    );
+                    DeudaTotal = 7800,
+                    FechaActualizacion = DateTime.UtcNow
                 }
+            };
 
-                await db.SaveChangesAsync();
-                
-                Console.WriteLine("✅ Datos expandidos creados exitosamente:");
-                Console.WriteLine($"   - 10 Clientes con diferentes niveles de mora");
-                Console.WriteLine($"   - 10 Deudas (Temprana: 2, Moderada: 2, Grave: 2, Crítica: 2, Extrema: 2)");
-                Console.WriteLine($"   - 8 Pagos variados (validados y pendientes)");
-                Console.WriteLine($"   - 3 Evaluaciones");
-                Console.WriteLine($"   - 2 Transacciones");
-                Console.WriteLine($"   - 5 Asignaciones de asesor");
-                Console.WriteLine($"   - Rango de mora: 15 a 180 días");
-                Console.WriteLine($"   - Rango de montos: S/ 1,962 a S/ 34,375");
-            }
+            db.Clientes.AddRange(nuevosClientes);
+            await db.SaveChangesAsync();
+
+            // Crear deudas con diferentes niveles de mora
+            var deudas = new List<Deuda>
+            {
+                // MORA TEMPRANA - Sandra (25 días)
+                new Deuda { ClienteId = nuevosClientes[0].Id, Monto = 1800, Intereses = 108, PenalidadCalculada = 54, TotalAPagar = 1962, FechaVencimiento = DateTime.UtcNow.AddDays(-25) },
+                // MORA TEMPRANA - Luis (18 días)
+                new Deuda { ClienteId = nuevosClientes[1].Id, Monto = 2100, Intereses = 84, PenalidadCalculada = 42, TotalAPagar = 2226, FechaVencimiento = DateTime.UtcNow.AddDays(-18) },
+
+                // MORA MODERADA - Roberto (42 días)
+                new Deuda { ClienteId = nuevosClientes[2].Id, Monto = 6500, Intereses = 650, PenalidadCalculada = 325, TotalAPagar = 7475, FechaVencimiento = DateTime.UtcNow.AddDays(-42) },
+                // MORA MODERADA - Patricia (35 días)
+                new Deuda { ClienteId = nuevosClientes[3].Id, Monto = 4200, Intereses = 504, PenalidadCalculada = 252, TotalAPagar = 4956, FechaVencimiento = DateTime.UtcNow.AddDays(-35) },
+
+                // MORA GRAVE - Miguel (72 días)
+                new Deuda { ClienteId = nuevosClientes[4].Id, Monto = 8700, Intereses = 1305, PenalidadCalculada = 652.50m, TotalAPagar = 10657.50m, FechaVencimiento = DateTime.UtcNow.AddDays(-72) },
+                // MORA GRAVE - Carmen (65 días)
+                new Deuda { ClienteId = nuevosClientes[5].Id, Monto = 5600, Intereses = 896, PenalidadCalculada = 448, TotalAPagar = 6944, FechaVencimiento = DateTime.UtcNow.AddDays(-65) },
+
+                // MORA CRÍTICA - Fernando (105 días)
+                new Deuda { ClienteId = nuevosClientes[6].Id, Monto = 15000, Intereses = 3000, PenalidadCalculada = 1500, TotalAPagar = 19500, FechaVencimiento = DateTime.UtcNow.AddDays(-105) },
+                // MORA CRÍTICA - Gloria (98 días)
+                new Deuda { ClienteId = nuevosClientes[7].Id, Monto = 12300, Intereses = 2214, PenalidadCalculada = 1107, TotalAPagar = 15621, FechaVencimiento = DateTime.UtcNow.AddDays(-98) },
+
+                // CASOS EXTREMOS - Andrés (150 días)
+                new Deuda { ClienteId = nuevosClientes[8].Id, Monto = 25000, Intereses = 6250, PenalidadCalculada = 3125, TotalAPagar = 34375, FechaVencimiento = DateTime.UtcNow.AddDays(-150) },
+                // CASOS EXTREMOS - Victoria (180 días)
+                new Deuda { ClienteId = nuevosClientes[9].Id, Monto = 7800, Intereses = 2106, PenalidadCalculada = 1053, TotalAPagar = 10959, FechaVencimiento = DateTime.UtcNow.AddDays(-180) }
+            };
+
+            db.Deudas.AddRange(deudas);
+
+            // Crear pagos variados
+            var pagos = new List<Pago>
+            {
+                // Pagos recientes (mora temprana)
+                new Pago { ClienteId = nuevosClientes[0].Id, Fecha = DateTime.UtcNow.AddDays(-20), Monto = 600, Validado = true, Estado = "Cancelado", Observacion = "Abono reciente" },
+                new Pago { ClienteId = nuevosClientes[1].Id, Fecha = DateTime.UtcNow.AddDays(-15), Monto = 500, Validado = true, Estado = "Cancelado", Observacion = "Pago parcial" },
+
+                // Pagos anteriores (mora moderada)
+                new Pago { ClienteId = nuevosClientes[2].Id, Fecha = DateTime.UtcNow.AddDays(-50), Monto = 1200, Validado = true, Estado = "Cancelado", Observacion = "Pago anterior" },
+                new Pago { ClienteId = nuevosClientes[3].Id, Fecha = DateTime.UtcNow.AddDays(-45), Monto = 900, Validado = true, Estado = "Cancelado", Observacion = "Último abono" },
+
+                // Pagos esporádicos (mora grave)
+                new Pago { ClienteId = nuevosClientes[4].Id, Fecha = DateTime.UtcNow.AddDays(-80), Monto = 2000, Validado = true, Estado = "Cancelado", Observacion = "Pago significativo anterior" },
+
+                // Pagos pendientes
+                new Pago { ClienteId = nuevosClientes[5].Id, Fecha = DateTime.UtcNow.AddDays(-5), Monto = 1500, Validado = false, Estado = "Pendiente", Observacion = "Pendiente validación" },
+                new Pago { ClienteId = nuevosClientes[6].Id, Fecha = DateTime.UtcNow.AddDays(-2), Monto = 3000, Validado = false, Estado = "Pendiente", Observacion = "Pago grande pendiente" },
+
+                // Casos sin pagos recientes (extremos)
+                new Pago { ClienteId = nuevosClientes[8].Id, Fecha = DateTime.UtcNow.AddDays(-200), Monto = 5000, Validado = true, Estado = "Cancelado", Observacion = "Último pago hace mucho" }
+            };
+
+            db.Pagos.AddRange(pagos);
+            await db.SaveChangesAsync();
+
+            Console.WriteLine("✅ Nuevos datos de mora creados exitosamente:");
+            Console.WriteLine($"   - 10 Clientes adicionales con diferentes niveles de mora");
+            Console.WriteLine($"   - 10 Deudas (Temprana: 2, Moderada: 2, Grave: 2, Crítica: 2, Extrema: 2)");
+            Console.WriteLine($"   - 8 Pagos variados (validados y pendientes)");
+            Console.WriteLine($"   - Rango de mora: 18 a 180 días");
+            Console.WriteLine($"   - Rango de montos: S/ 2,226 a S/ 34,375");
         }
 
         private static async Task<ApplicationUser> CreateUserAsync(UserManager<ApplicationUser> userManager, string email, string password, string role, string fullName)
