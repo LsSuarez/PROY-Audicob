@@ -14,13 +14,15 @@ namespace Audicob.Controllers
             _context = context;
         }
 
-        public IActionResult Index(string? filtro)
+        public IActionResult Index(string? filtro, decimal? deudaMin, decimal? deudaMax, string? clasificacion)
         {
-            // Buscar clientes sin asignar
+            // Buscar clientes sin asignar (donde AsignacionAsesorId es NULL)
             var query = _context.Clientes
                 .Include(c => c.AsignacionAsesor)
-                .Where(c => c.AsignacionAsesor == null);
+                .Include(c => c.Deuda)
+                .Where(c => c.AsignacionAsesorId == null);
 
+            // Filtro por nombre o documento
             if (!string.IsNullOrEmpty(filtro))
             {
                 query = query.Where(c =>
@@ -28,10 +30,32 @@ namespace Audicob.Controllers
                     c.Documento.Contains(filtro));
             }
 
+            // Filtro por rango de deuda
+            if (deudaMin.HasValue)
+            {
+                query = query.Where(c => c.DeudaTotal >= deudaMin.Value);
+            }
+
+            if (deudaMax.HasValue)
+            {
+                query = query.Where(c => c.DeudaTotal <= deudaMax.Value);
+            }
+
+            // Filtro por clasificación
+            if (!string.IsNullOrEmpty(clasificacion) && clasificacion != "")
+            {
+                query = query.Where(c => c.Deuda != null && c.Deuda.Clasificacion == clasificacion);
+            }
+
+            var clientes = query.ToList();
+
             var model = new ClienteDashboardViewModel
             {
                 Filtro = filtro,
-                ListCliente = query.ToList()
+                DeudaMin = deudaMin,
+                DeudaMax = deudaMax,
+                Clasificacion = clasificacion,
+                ListCliente = clientes
             };
 
             return View(model);
@@ -51,25 +75,54 @@ namespace Audicob.Controllers
             return PartialView("_AsignarAsesorPartial", asesores);
         }
 
-
-        [HttpPost]
-        public IActionResult GuardarAsignacion(int clienteId, int asesorId)
+        public IActionResult ObtenerAsesores()
         {
-            var cliente = _context.Clientes.FirstOrDefault(c => c.Id == clienteId);
-            var asesor = _context.AsignacionesAsesores.FirstOrDefault(a => a.Id == asesorId);
+            try
+            {
+                var asesores = _context.AsignacionesAsesores
+                    .Select(a => new { id = a.Id, nombre = a.AsesorNombre })
+                    .OrderBy(a => a.nombre)
+                    .ToList();
 
-            if (cliente == null || asesor == null)
-                return NotFound();
+                return Json(asesores);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { error = ex.Message });
+            }
+        }
 
-            cliente.AsignacionAsesor = asesor;
-            _context.SaveChanges();
-
+        public IActionResult ObtenerAsignaciones()
+        {
             var lista = _context.AsignacionesAsesores
                 .Include(a => a.Clientes)
                 .ToList();
 
             return PartialView("_TablaAsignacionesPartial", lista);
         }
+        public IActionResult GuardarAsignacion(int clienteId, int asesorId)
+        {
+            try
+            {
+                var cliente = _context.Clientes.FirstOrDefault(c => c.Id == clienteId);
+                var asesor = _context.AsignacionesAsesores.FirstOrDefault(a => a.Id == asesorId);
 
+                if (cliente == null || asesor == null)
+                    return NotFound("Cliente o Asesor no encontrado");
+
+                cliente.AsignacionAsesor = asesor;
+                _context.SaveChanges();
+
+                var lista = _context.AsignacionesAsesores
+                    .Include(a => a.Clientes)
+                    .ToList();
+
+                return PartialView("_TablaAsignacionesPartial", lista);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Error al guardar: {ex.Message}");
+            }
+        }
     }
 }
