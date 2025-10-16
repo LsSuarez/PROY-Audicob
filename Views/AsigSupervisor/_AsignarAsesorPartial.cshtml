@@ -4,44 +4,63 @@
     var clienteNombre = ViewBag.ClienteNombre;
 }
 
-<div class="card border-primary mb-3">
-    <div class="card-header bg-primary text-white">
-        Asignar asesor al cliente: <strong>@clienteNombre</strong>
+<form id="formAsignar">
+    <input type="hidden" name="clienteId" value="@clienteId" />
+
+    <div class="mb-3">
+        <label for="asesorId" class="form-label">Selecciona un Asesor:</label>
+        <select class="form-select" name="asesorId" id="asesorId" required>
+            <option value="">-- Seleccione un asesor --</option>
+            @foreach (var asesor in Model)
+            {
+                <option value="@asesor.Id">@asesor.AsesorNombre</option>
+            }
+        </select>
     </div>
-    <div class="card-body">
-        <form id="formAsignar">
-            <input type="hidden" name="clienteId" value="@clienteId" />
 
-            <div class="mb-3">
-                <label for="asesorId" class="form-label">Selecciona un Asesor:</label>
-                <select class="form-select" name="asesorId" id="asesorId">
-                    <option value="">-- Seleccione --</option>
-                    @foreach (var asesor in Model)
-                    {
-                        <option value="@asesor.Id">@asesor.AsesorNombre</option>
-                    }
-                </select>
-            </div>
-
-            <button type="button" class="btn btn-success" id="btnGuardarAsignacion">
-                Asignar
-            </button>
-        </form>
-
-        <div id="tablaAsignacionesContainer" class="mt-4"></div>
+    <div class="d-flex gap-2">
+        <button type="button" class="btn btn-success" id="btnGuardarAsignacion">
+            Asignar
+        </button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            Cancelar
+        </button>
     </div>
-</div>
+</form>
 
 <script>
-    $("#btnGuardarAsignacion").click(function () {
-        var data = $("#formAsignar").serialize();
-        console.log("Enviando datos:", data); // ✅ Verifica que se ejecuta
+    $(document).ready(function () {
+        $("#btnGuardarAsignacion").click(function (e) {
+            e.preventDefault();
 
-        $.post("/AsigSupervisor/GuardarAsignacion", data, function (result) {
-            $("#tablaAsignacionesContainer").html(result);
-            console.log("Respuesta recibida, actualizando tabla...");
-        }).fail(function (xhr) {
-            console.error("Error en la asignación:", xhr.responseText);
+            var asesorId = $("#asesorId").val();
+            var clienteId = $("input[name='clienteId']").val();
+
+            if (!asesorId) {
+                alert("Por favor selecciona un asesor");
+                return;
+            }
+
+            $.ajax({
+                url: "/AsigSupervisor/GuardarAsignacion",
+                type: "POST",
+                data: {
+                    clienteId: clienteId,
+                    asesorId: asesorId
+                },
+                success: function (result) {
+                    alert("Cliente asignado correctamente");
+                    // Cerrar modal
+                    bootstrap.Modal.getInstance(document.getElementById('modalAsignacion')).hide();
+                    // Recargar tabla de asignaciones
+                    cargarAsignaciones();
+                    // Recargar página para actualizar lista de clientes
+                    location.reload();
+                },
+                error: function (xhr, status, error) {
+                    alert("Error al asignar el cliente: " + error);
+                }
+            });
         });
     });
 </script>
