@@ -7,8 +7,10 @@
     @if (SignInManager.IsSignedIn(User))
     {
         var user = await UserManager.GetUserAsync(User);
-        var roles = await UserManager.GetRolesAsync(user);
-        var rol = roles.FirstOrDefault() ?? "Sin rol";  // Si no tiene rol asignado, mostrar "Sin rol"
+        if (user != null)
+        {
+            var roles = await UserManager.GetRolesAsync(user);
+            var rol = roles.FirstOrDefault() ?? "Sin rol";  // Si no tiene rol asignado, mostrar "Sin rol"
 
         <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle text-white" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -43,6 +45,7 @@
                 }
             </ul>
         </li>
+        }
     }
     else
     {

@@ -24,55 +24,90 @@ namespace Audicob.Controllers
         {
             try
             {
-                // Diagnóstico detallado
-                if (User == null)
-                {
-                    TempData["Error"] = "User principal es null";
-                    return RedirectToAction("Login", "Account");
-                }
-
+                // Validación básica
                 if (!User.Identity?.IsAuthenticated ?? true)
                 {
                     TempData["Error"] = "Usuario no autenticado";
-                    return Challenge();
+                    return RedirectToAction("Login", "Account");
                 }
 
                 var user = await _userManager.GetUserAsync(User);
                 if (user == null)
                 {
-                    TempData["Error"] = $"No se pudo obtener el usuario. Identity Name: {User.Identity?.Name ?? "null"}, IsAuthenticated: {User.Identity?.IsAuthenticated}";
+                    TempData["Error"] = "No se pudo obtener la información del usuario.";
                     return RedirectToAction("Login", "Account");
                 }
 
-                if (!User.IsInRole("AsesorCobranza"))
-                {
-                    var roles = await _userManager.GetRolesAsync(user);
-                    TempData["Error"] = $"No tienes permisos para acceder a esta funcionalidad. Roles actuales: {string.Join(", ", roles)}";
-                    return RedirectToAction("Index", "Home");
-                }
-
-                var asignaciones = await _db.AsignacionesAsesores
-                    .Include(a => a.Cliente)
-                    .Where(a => a.AsesorUserId == user.Id)
-                    .ToListAsync();
-
+                // Crear ViewModel con valores por defecto seguros
                 var vm = new AsesorDashboardViewModel
                 {
-                    TotalClientesAsignados = asignaciones.Count,
-                    TotalDeudaCartera = asignaciones.Sum(a => a.Cliente.DeudaTotal),
-                    TotalPagosRecientes = await _db.Pagos
-                        .Where(p => asignaciones.Select(a => a.ClienteId).Contains(p.ClienteId) &&
-                                    p.Fecha >= DateTime.UtcNow.AddMonths(-1))
-                        .SumAsync(p => p.Monto),
-                    Clientes = asignaciones.Select(a => a.Cliente.Nombre).ToList(),
-                    DeudasPorCliente = asignaciones.Select(a => a.Cliente.DeudaTotal).ToList()
+                    TotalClientesAsignados = 0,
+                    TotalDeudaCartera = 0,
+                    TotalPagosRecientes = 0,
+                    Clientes = new List<string>(),
+                    DeudasPorCliente = new List<decimal>()
                 };
+
+                // Intentar cargar datos de forma segura
+                try
+                {
+                    var asignaciones = await _db.AsignacionesAsesores
+                        .Include(a => a.Cliente)
+                        .Where(a => a.AsesorUserId == user.Id)
+                        .ToListAsync();
+
+                    if (asignaciones != null && asignaciones.Any())
+                    {
+                        vm.TotalClientesAsignados = asignaciones.Count;
+                        
+                        // Calcular deuda total de forma segura
+                        vm.TotalDeudaCartera = 0;
+                        vm.Clientes = new List<string>();
+                        vm.DeudasPorCliente = new List<decimal>();
+
+                        foreach (var asignacion in asignaciones)
+                        {
+                            if (asignacion.Cliente != null)
+                            {
+                                vm.TotalDeudaCartera += asignacion.Cliente.DeudaTotal;
+                                vm.Clientes.Add(asignacion.Cliente.Nombre ?? "Sin nombre");
+                                vm.DeudasPorCliente.Add(asignacion.Cliente.DeudaTotal);
+                            }
+                        }
+
+                        // Consultar pagos recientes de forma segura
+                        try
+                        {
+                            var clienteIds = asignaciones.Select(a => a.ClienteId).ToList();
+                            var fechaLimite = DateTime.UtcNow.AddMonths(-1);
+                            
+                            var pagoRecientes = await _db.Pagos
+                                .Where(p => clienteIds.Contains(p.ClienteId) && p.Fecha >= fechaLimite)
+                                .ToListAsync();
+                            
+                            vm.TotalPagosRecientes = pagoRecientes.Sum(p => p.Monto);
+                        }
+                        catch
+                        {
+                            // Si falla la consulta de pagos, usar 0
+                            vm.TotalPagosRecientes = 0;
+                        }
+                    }
+                    else
+                    {
+                        ViewBag.InfoMessage = "No tienes clientes asignados actualmente.";
+                    }
+                }
+                catch (Exception dataEx)
+                {
+                    ViewBag.WarningMessage = $"Error al cargar algunos datos: {dataEx.Message}";
+                }
 
                 return View(vm);
             }
             catch (Exception ex)
             {
-                TempData["Error"] = $"Error inesperado: {ex.Message}";
+                TempData["Error"] = $"Error en Dashboard: {ex.Message}";
                 return RedirectToAction("Index", "Home");
             }
         }
@@ -85,54 +120,77 @@ namespace Audicob.Controllers
         [HttpGet]
         public async Task<IActionResult> CambiarEstadoMora(int? clienteId)
         {
-            if (!User.Identity?.IsAuthenticated ?? true)
+            try
             {
-                return Challenge();
-            }
+                if (!User.Identity?.IsAuthenticated ?? true)
+                {
+                    TempData["Error"] = "Usuario no autenticado";
+                    return RedirectToAction("Login", "Account");
+                }
 
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-            {
-                TempData["Error"] = "No se pudo obtener la información del usuario. Por favor, inicie sesión nuevamente.";
-                return RedirectToAction("Login", "Account");
-            }
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null)
+                {
+                    TempData["Error"] = "No se pudo obtener la información del usuario.";
+                    return RedirectToAction("Login", "Account");
+                }
 
-            // Verificar que el usuario tenga el rol correcto
-            if (!User.IsInRole("AsesorCobranza"))
-            {
-                TempData["Error"] = "No tienes permisos para acceder a esta funcionalidad.";
-                return RedirectToAction("Index", "Home");
-            }
-            
-            // Obtener clientes asignados al asesor
-            var clientesAsignados = await _db.AsignacionesAsesores
-                .Include(a => a.Cliente)
-                .Where(a => a.AsesorUserId == user.Id)
-                .Select(a => a.Cliente)
-                .ToListAsync();
+                // Verificar rol de forma segura
+                var userRoles = await _userManager.GetRolesAsync(user);
+                if (!userRoles.Contains("AsesorCobranza"))
+                {
+                    TempData["Error"] = $"No tienes permisos para acceder a esta funcionalidad.";
+                    return RedirectToAction("Index", "Home");
+                }
 
-            if (!clientesAsignados.Any())
+                // Obtener clientes asignados al asesor
+                var clientesAsignados = new List<Cliente>();
+                
+                try
+                {
+                    var asignaciones = await _db.AsignacionesAsesores
+                        .Include(a => a.Cliente)
+                        .Where(a => a.AsesorUserId == user.Id)
+                        .ToListAsync();
+
+                    clientesAsignados = asignaciones
+                        .Where(a => a.Cliente != null)
+                        .Select(a => a.Cliente!)
+                        .ToList();
+                }
+                catch (Exception dataEx)
+                {
+                    TempData["Warning"] = $"Error al cargar clientes: {dataEx.Message}";
+                }
+
+                var vm = new CambiarEstadoMoraViewModel();
+
+                if (clienteId.HasValue && clientesAsignados.Any())
+                {
+                    var cliente = clientesAsignados.FirstOrDefault(c => c.Id == clienteId.Value);
+                    if (cliente != null)
+                    {
+                        vm.ClienteId = cliente.Id;
+                        vm.ClienteNombre = cliente.Nombre;
+                        vm.ClienteDocumento = cliente.Documento;
+                        vm.EstadoActual = cliente.EstadoMora;
+                    }
+                }
+
+                ViewBag.ClientesAsignados = clientesAsignados;
+                
+                if (!clientesAsignados.Any())
+                {
+                    ViewBag.InfoMessage = "No tienes clientes asignados para gestionar.";
+                }
+
+                return View(vm);
+            }
+            catch (Exception ex)
             {
-                TempData["Error"] = "No tienes clientes asignados para gestionar.";
+                TempData["Error"] = $"Error en CambiarEstadoMora: {ex.Message}";
                 return RedirectToAction("Dashboard");
             }
-
-            var vm = new CambiarEstadoMoraViewModel();
-
-            if (clienteId.HasValue)
-            {
-                var cliente = clientesAsignados.FirstOrDefault(c => c.Id == clienteId.Value);
-                if (cliente != null)
-                {
-                    vm.ClienteId = cliente.Id;
-                    vm.ClienteNombre = cliente.Nombre;
-                    vm.ClienteDocumento = cliente.Documento;
-                    vm.EstadoActual = cliente.EstadoMora;
-                }
-            }
-
-            ViewBag.ClientesAsignados = clientesAsignados;
-            return View(vm);
         }
 
         /// <summary>

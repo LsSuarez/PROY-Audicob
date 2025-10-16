@@ -36,11 +36,14 @@ namespace Audicob.Data.SeedData
             var asesorUser = await CreateUserAsync(userManager, "asesor@audicob.com", "Asesor123!", "AsesorCobranza", "Asesor de Cobranza");
             var clienteUser = await CreateUserAsync(userManager, "cliente@audicob.com", "Cliente123!", "Cliente", "Cliente Demo");
 
+            // 🚀 FORZAR DATOS BÁSICOS SIEMPRE (para que nunca esté vacío)
+            await ForzarDatosBasicos(db, asesorUser);
+            
             // AGREGAR CLIENTES ADICIONALES DE MORA (preservando existentes)
             await AgregarClientesMoraSiNoExisten(db, clienteUser, asesorUser, supervisorUser);
             
-            // Crear asignaciones de asesores a clientes
-            await CrearAsignacionesAsesores(db, asesorUser);
+            // FORZAR CREACIÓN DE ASIGNACIONES SIEMPRE - PARA QUE SIEMPRE HAYA DATOS
+            await ForzarAsignacionesAsesores(db, asesorUser);
         }
 
         private static async Task AgregarClientesMoraSiNoExisten(ApplicationDbContext db, ApplicationUser clienteUser, ApplicationUser? asesorUser, ApplicationUser? supervisorUser)
@@ -413,6 +416,150 @@ namespace Audicob.Data.SeedData
                 }
             }
             return user;
+        }
+
+        private static async Task ForzarDatosBasicos(ApplicationDbContext db, ApplicationUser? asesorUser)
+        {
+            Console.WriteLine("🚀 FORZANDO DATOS BÁSICOS...");
+
+            // Contar cuántos clientes existen
+            var totalClientes = await db.Clientes.CountAsync();
+            Console.WriteLine($"📊 Total clientes en BD: {totalClientes}");
+
+            // Si hay menos de 3 clientes, crear algunos básicos
+            if (totalClientes < 3)
+            {
+                var clientesBasicos = new List<Cliente>
+                {
+                    new Cliente
+                    {
+                        Documento = "12345678",
+                        Nombre = "Juan Pérez López",
+                        IngresosMensuales = 3000,
+                        DeudaTotal = 1500,
+                        EstadoMora = "Temprana",
+                        FechaActualizacion = DateTime.UtcNow
+                    },
+                    new Cliente
+                    {
+                        Documento = "87654321",
+                        Nombre = "María García Silva",
+                        IngresosMensuales = 2500,
+                        DeudaTotal = 2800,
+                        EstadoMora = "Moderada",
+                        FechaActualizacion = DateTime.UtcNow
+                    },
+                    new Cliente
+                    {
+                        Documento = "11223344",
+                        Nombre = "Carlos Mendoza Cruz",
+                        IngresosMensuales = 4000,
+                        DeudaTotal = 5200,
+                        EstadoMora = "Grave",
+                        FechaActualizacion = DateTime.UtcNow
+                    }
+                };
+
+                db.Clientes.AddRange(clientesBasicos);
+                await db.SaveChangesAsync();
+                Console.WriteLine($"✅ Creados {clientesBasicos.Count} clientes básicos");
+
+                // Crear deudas para estos clientes
+                var deudas = clientesBasicos.Select(cliente => new Deuda
+                {
+                    ClienteId = cliente.Id,
+                    Monto = cliente.DeudaTotal,
+                    Intereses = cliente.DeudaTotal * 0.02m,
+                    PenalidadCalculada = cliente.DeudaTotal * 0.01m,
+                    TotalAPagar = cliente.DeudaTotal * 1.03m,
+                    FechaVencimiento = DateTime.UtcNow.AddDays(-30)
+                }).ToList();
+
+                db.Deudas.AddRange(deudas);
+                await db.SaveChangesAsync();
+                Console.WriteLine($"✅ Creadas {deudas.Count} deudas básicas");
+            }
+
+            // Si el asesor existe, forzar asignaciones
+            if (asesorUser != null)
+            {
+                var asignacionesExistentes = await db.AsignacionesAsesores
+                    .CountAsync(a => a.AsesorUserId == asesorUser.Id);
+
+                if (asignacionesExistentes == 0)
+                {
+                    var primerosTresClientes = await db.Clientes.Take(3).ToListAsync();
+                    if (primerosTresClientes.Any())
+                    {
+                        var asignaciones = primerosTresClientes.Select(cliente => new AsignacionAsesor
+                        {
+                            ClienteId = cliente.Id,
+                            AsesorUserId = asesorUser.Id,
+                            AsesorNombre = asesorUser.FullName ?? "Asesor de Cobranza",
+                            FechaAsignacion = DateTime.UtcNow
+                        }).ToList();
+
+                        db.AsignacionesAsesores.AddRange(asignaciones);
+                        await db.SaveChangesAsync();
+                        Console.WriteLine($"✅ FORZADO: Asignados {asignaciones.Count} clientes al asesor {asesorUser.Email}");
+                    }
+                }
+            }
+
+            Console.WriteLine("🚀 DATOS BÁSICOS VERIFICADOS/CREADOS");
+        }
+
+        private static async Task ForzarAsignacionesAsesores(ApplicationDbContext db, ApplicationUser? asesorUser)
+        {
+            if (asesorUser == null)
+            {
+                Console.WriteLine("⚠️ No se pudo crear asignaciones: Asesor no encontrado");
+                return;
+            }
+
+            // Contar asignaciones actuales
+            var asignacionesActuales = await db.AsignacionesAsesores
+                .CountAsync(a => a.AsesorUserId == asesorUser.Id);
+
+            Console.WriteLine($"🔍 Asignaciones actuales para {asesorUser.Email}: {asignacionesActuales}");
+
+            // Si hay menos de 5 asignaciones, crear más automáticamente
+            if (asignacionesActuales < 5)
+            {
+                // Obtener clientes que NO están asignados a este asesor
+                var clientesNoAsignados = await db.Clientes
+                    .Where(c => !db.AsignacionesAsesores.Any(a => a.ClienteId == c.Id && a.AsesorUserId == asesorUser.Id))
+                    .OrderBy(c => c.Id)
+                    .Take(10 - asignacionesActuales) // Asignar hasta tener 10 total
+                    .ToListAsync();
+
+                if (clientesNoAsignados.Any())
+                {
+                    var nuevasAsignaciones = clientesNoAsignados.Select(cliente => new AsignacionAsesor
+                    {
+                        ClienteId = cliente.Id,
+                        AsesorUserId = asesorUser.Id,
+                        AsesorNombre = asesorUser.FullName ?? "Asesor de Cobranza",
+                        FechaAsignacion = DateTime.UtcNow
+                    }).ToList();
+
+                    db.AsignacionesAsesores.AddRange(nuevasAsignaciones);
+                    await db.SaveChangesAsync();
+
+                    Console.WriteLine($"✅ FORZADO: Nuevas asignaciones creadas automáticamente:");
+                    Console.WriteLine($"   - Asesor: {asesorUser.Email}");
+                    Console.WriteLine($"   - Nuevos clientes asignados: {nuevasAsignaciones.Count}");
+                    Console.WriteLine($"   - Total asignaciones ahora: {asignacionesActuales + nuevasAsignaciones.Count}");
+                }
+                else
+                {
+                    Console.WriteLine("⚠️ No hay clientes disponibles para asignar automáticamente");
+                }
+            }
+            else
+            {
+                Console.WriteLine($"✅ El asesor ya tiene suficientes asignaciones ({asignacionesActuales})");
+            }
         }
     }
 }
