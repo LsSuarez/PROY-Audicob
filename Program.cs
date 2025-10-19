@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Audicob.Data;
 using Audicob.Models;
 using Audicob.Data.SeedData;
+using Audicob.Services;
 
 namespace Audicob
 {
@@ -38,6 +39,10 @@ namespace Audicob
             // 🌐 MVC + Razor Pages
             builder.Services.AddControllersWithViews(); // Configuración de controladores y vistas
             builder.Services.AddRazorPages(); // Configuración de Razor Pages
+
+            // 📬 SERVICIOS DE NOTIFICACIONES
+            builder.Services.AddScoped<INotificacionService, NotificacionService>();
+            builder.Services.AddHostedService<RecordatorioHostedService>();
 
             // 🔧 Configuración del middleware de la aplicación
             var app = builder.Build();

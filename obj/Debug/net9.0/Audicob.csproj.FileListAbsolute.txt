@@ -594,9 +594,9 @@ C:/Users/abel_/Downloads/de0/PROY-Audicob/obj/Debug/net9.0/Audicob.genruntimecon
 C:/Users/abel_/Downloads/de0/PROY-Audicob/obj/Debug/net9.0/ref/Audicob.dll
 /workspaces/PROY-Audicob/bin/Debug/net9.0/appsettings.Development.json
 /workspaces/PROY-Audicob/bin/Debug/net9.0/appsettings.json
-/workspaces/PROY-Audicob/bin/Debug/net9.0/app.db
 /workspaces/PROY-Audicob/bin/Debug/net9.0/Audicob.staticwebassets.runtime.json
 /workspaces/PROY-Audicob/bin/Debug/net9.0/Audicob.staticwebassets.endpoints.json
+/workspaces/PROY-Audicob/bin/Debug/net9.0/app.db
 /workspaces/PROY-Audicob/bin/Debug/net9.0/Audicob
 /workspaces/PROY-Audicob/bin/Debug/net9.0/Audicob.deps.json
 /workspaces/PROY-Audicob/bin/Debug/net9.0/Audicob.runtimeconfig.json
@@ -649,7 +649,6 @@ C:/Users/abel_/Downloads/de0/PROY-Audicob/obj/Debug/net9.0/ref/Audicob.dll
 /workspaces/PROY-Audicob/bin/Debug/net9.0/System.Composition.Hosting.dll
 /workspaces/PROY-Audicob/bin/Debug/net9.0/System.Composition.Runtime.dll
 /workspaces/PROY-Audicob/bin/Debug/net9.0/System.Composition.TypedParts.dll
-/workspaces/PROY-Audicob/bin/Debug/net9.0/System.Text.Json.dll
 /workspaces/PROY-Audicob/bin/Debug/net9.0/cs/Microsoft.CodeAnalysis.resources.dll
 /workspaces/PROY-Audicob/bin/Debug/net9.0/de/Microsoft.CodeAnalysis.resources.dll
 /workspaces/PROY-Audicob/bin/Debug/net9.0/es/Microsoft.CodeAnalysis.resources.dll
@@ -737,6 +736,7 @@ C:/Users/abel_/Downloads/de0/PROY-Audicob/obj/Debug/net9.0/ref/Audicob.dll
 /workspaces/PROY-Audicob/bin/Debug/net9.0/runtimes/win-x64/native/e_sqlite3.dll
 /workspaces/PROY-Audicob/bin/Debug/net9.0/runtimes/win-x86/native/e_sqlite3.dll
 /workspaces/PROY-Audicob/obj/Debug/net9.0/Audicob.csproj.AssemblyReference.cache
+/workspaces/PROY-Audicob/obj/Debug/net9.0/rpswa.dswa.cache.json
 /workspaces/PROY-Audicob/obj/Debug/net9.0/Audicob.GeneratedMSBuildEditorConfig.editorconfig
 /workspaces/PROY-Audicob/obj/Debug/net9.0/Audicob.AssemblyInfoInputs.cache
 /workspaces/PROY-Audicob/obj/Debug/net9.0/Audicob.AssemblyInfo.cs
@@ -746,6 +746,9 @@ C:/Users/abel_/Downloads/de0/PROY-Audicob/obj/Debug/net9.0/ref/Audicob.dll
 /workspaces/PROY-Audicob/obj/Debug/net9.0/Audicob.RazorAssemblyInfo.cache
 /workspaces/PROY-Audicob/obj/Debug/net9.0/Audicob.RazorAssemblyInfo.cs
 /workspaces/PROY-Audicob/obj/Debug/net9.0/Audicob.sourcelink.json
+/workspaces/PROY-Audicob/obj/Debug/net9.0/rjimswa.dswa.cache.json
+/workspaces/PROY-Audicob/obj/Debug/net9.0/rjsmrazor.dswa.cache.json
+/workspaces/PROY-Audicob/obj/Debug/net9.0/rjsmcshtml.dswa.cache.json
 /workspaces/PROY-Audicob/obj/Debug/net9.0/scopedcss/Views/Shared/_Layout.cshtml.rz.scp.css
 /workspaces/PROY-Audicob/obj/Debug/net9.0/scopedcss/bundle/Audicob.styles.css
 /workspaces/PROY-Audicob/obj/Debug/net9.0/scopedcss/projectbundle/Audicob.bundle.scp.css
@@ -873,17 +876,12 @@ C:/Users/abel_/Downloads/de0/PROY-Audicob/obj/Debug/net9.0/ref/Audicob.dll
 /workspaces/PROY-Audicob/obj/Debug/net9.0/compressed/tuuvw9i2bl-muycvpuwrr.gz
 /workspaces/PROY-Audicob/obj/Debug/net9.0/compressed/txygc66wbo-87fc7y1x7t.gz
 /workspaces/PROY-Audicob/obj/Debug/net9.0/compressed/f3fo9tbp69-jfsiqqwiad.gz
-/workspaces/PROY-Audicob/obj/Debug/net9.0/compressed/cnjyzm77z4-v7yiokpw1m.gz
-/workspaces/PROY-Audicob/obj/Debug/net9.0/compressed/5kcdgyg3x4-v7yiokpw1m.gz
+/workspaces/PROY-Audicob/obj/Debug/net9.0/compressed/cnjyzm77z4-6tc0yy7mva.gz
+/workspaces/PROY-Audicob/obj/Debug/net9.0/compressed/5kcdgyg3x4-6tc0yy7mva.gz
 /workspaces/PROY-Audicob/obj/Debug/net9.0/staticwebassets.build.json
+/workspaces/PROY-Audicob/obj/Debug/net9.0/staticwebassets.build.json.cache
 /workspaces/PROY-Audicob/obj/Debug/net9.0/staticwebassets.development.json
 /workspaces/PROY-Audicob/obj/Debug/net9.0/staticwebassets.build.endpoints.json
-/workspaces/PROY-Audicob/obj/Debug/net9.0/staticwebassets/msbuild.Audicob.Microsoft.AspNetCore.StaticWebAssets.props
-/workspaces/PROY-Audicob/obj/Debug/net9.0/staticwebassets/msbuild.Audicob.Microsoft.AspNetCore.StaticWebAssetEndpoints.props
-/workspaces/PROY-Audicob/obj/Debug/net9.0/staticwebassets/msbuild.build.Audicob.props
-/workspaces/PROY-Audicob/obj/Debug/net9.0/staticwebassets/msbuild.buildMultiTargeting.Audicob.props
-/workspaces/PROY-Audicob/obj/Debug/net9.0/staticwebassets/msbuild.buildTransitive.Audicob.props
-/workspaces/PROY-Audicob/obj/Debug/net9.0/staticwebassets.pack.json
 /workspaces/PROY-Audicob/obj/Debug/net9.0/Audicob.csproj.Up2Date
 /workspaces/PROY-Audicob/obj/Debug/net9.0/Audicob.dll
 /workspaces/PROY-Audicob/obj/Debug/net9.0/refint/Audicob.dll
