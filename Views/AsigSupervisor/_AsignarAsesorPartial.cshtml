@@ -1,0 +1,66 @@
+@model IEnumerable<Audicob.Models.AsignacionAsesor>
+@{
+    var clienteId = ViewBag.ClienteId;
+    var clienteNombre = ViewBag.ClienteNombre;
+}
+
+<form id="formAsignar">
+    <input type="hidden" name="clienteId" value="@clienteId" />
+
+    <div class="mb-3">
+        <label for="asesorId" class="form-label">Selecciona un Asesor:</label>
+        <select class="form-select" name="asesorId" id="asesorId" required>
+            <option value="">-- Seleccione un asesor --</option>
+            @foreach (var asesor in Model)
+            {
+                <option value="@asesor.Id">@asesor.AsesorNombre</option>
+            }
+        </select>
+    </div>
+
+    <div class="d-flex gap-2">
+        <button type="button" class="btn btn-success" id="btnGuardarAsignacion">
+            Asignar
+        </button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            Cancelar
+        </button>
+    </div>
+</form>
+
+<script>
+    $(document).ready(function () {
+        $("#btnGuardarAsignacion").click(function (e) {
+            e.preventDefault();
+
+            var asesorId = $("#asesorId").val();
+            var clienteId = $("input[name='clienteId']").val();
+
+            if (!asesorId) {
+                alert("Por favor selecciona un asesor");
+                return;
+            }
+
+            $.ajax({
+                url: "/AsigSupervisor/GuardarAsignacion",
+                type: "POST",
+                data: {
+                    clienteId: clienteId,
+                    asesorId: asesorId
+                },
+                success: function (result) {
+                    alert("Cliente asignado correctamente");
+                    // Cerrar modal
+                    bootstrap.Modal.getInstance(document.getElementById('modalAsignacion')).hide();
+                    // Recargar tabla de asignaciones
+                    cargarAsignaciones();
+                    // Recargar página para actualizar lista de clientes
+                    location.reload();
+                },
+                error: function (xhr, status, error) {
+                    alert("Error al asignar el cliente: " + error);
+                }
+            });
+        });
+    });
+</script>

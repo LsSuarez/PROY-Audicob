@@ -1,0 +1,32 @@
+@model List<Audicob.Models.Cliente>
+@{
+    ViewData["Title"] = "Clientes Aceptados por Admin";
+}
+
+<h2 class="mb-4">Clientes Aceptados por el Administrador</h2>
+
+<table class="table table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th>Nombre</th>
+            <th>Documento</th>
+            <th>Ingresos Mensuales</th>
+            <th>Deuda Total</th>
+            <th>Motivo</th>
+            <th>Fecha de Decisión</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var c in Model)
+        {
+            <tr>
+                <td>@c.Nombre</td>
+                <td>@c.Documento</td>
+                <td>@c.IngresosMensuales.ToString("C")</td>
+                <td>@c.DeudaTotal.ToString("C")</td>
+                <td>@c.MotivoAdmin</td>
+                <td>@c.FechaDecisionAdmin?.ToString("dd/MM/yyyy HH:mm")</td>
+            </tr>
+        }
+    </tbody>
+</table>

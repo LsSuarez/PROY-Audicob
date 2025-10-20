@@ -1,5 +1,6 @@
 ﻿<!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,21 +9,19 @@
     <!-- Bootstrap 5 CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
 
-
-    <!-- Bootstrap Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
     <!-- Estilos personalizados -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/Audicob.styles.css" asp-append-version="true" />
 </head>
+
 <body>
     <header>
         <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
             <div class="container-fluid">
                 <a class="navbar-brand fw-bold" asp-controller="Home" asp-action="Index">AUDICOB ERP</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Menú">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
+                    aria-controls="mainNav" aria-expanded="false" aria-label="Menú">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="mainNav">
@@ -36,6 +35,61 @@
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="Home" asp-action="Privacy">Privacidad</a>
                         </li>
+
+                        @using Microsoft.AspNetCore.Identity
+                        @inject SignInManager<ApplicationUser> SignInManager
+
+                        @if (SignInManager.IsSignedIn(User))
+                        {
+                            @* --- CLIENTE --- *@
+                            @if (User.IsInRole("Cliente"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Cliente" asp-action="DetalleDeudaTotal">
+                                        Deudas
+                                    </a>
+                                </li>
+                            }
+                            @* --- ASESOR --- *@
+                            @if (User.IsInRole("AsesorCobranza"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Asesor" asp-action="HistorialCredito">
+                                        Historial crediticio
+                                    </a>
+                                </li>
+                            }
+
+                            @* --- SUPERVISOR --- *@
+                            @if (User.IsInRole("Supervisor"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="ClienteBusqueda" asp-action="Index">
+                                        Evaluar situación financiera
+                                    </a>
+                                </li>
+
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="AsigSupervisor" asp-action="Index">
+                                        Segmentar clientes
+                                    </a>
+                                </li>
+                                
+                                <li class="nav-item dropdown">
+                                    @await Html.PartialAsync("_NotificacionesPartial")
+                                </li>
+                            }
+
+                            @* --- ADMINISTRADOR (GERENTE) --- *@
+                            @if (User.IsInRole("Administrador"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="ClienteGerente" asp-action="Index">
+                                        Confirmar evaluación revisada
+                                    </a>
+                                </li>
+                            }
+                        }
                     </ul>
                     <partial name="_LoginPartial" />
                 </div>
@@ -76,4 +130,5 @@
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
+
 </html>

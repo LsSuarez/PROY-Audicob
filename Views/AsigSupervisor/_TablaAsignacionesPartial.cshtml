@@ -1,0 +1,30 @@
+@model IEnumerable<Audicob.Models.AsignacionAsesor>
+
+<table class="table table-bordered table-striped">
+    <thead class="table-light">
+        <tr>
+            <th>Id Asesor</th>
+            <th>Asesor</th>
+            <th>Clientes Asignados</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Id</td>
+                <td>@item.AsesorNombre</td>
+                <td>
+                    @if (item.Clientes != null && item.Clientes.Any())
+                    {
+                        @string.Join(", ", item.Clientes.Select(c => c.Nombre))
+                    }
+                    else
+                    {
+                        <span class="text-muted">Sin clientes asignados</span>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

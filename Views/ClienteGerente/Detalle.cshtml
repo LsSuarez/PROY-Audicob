@@ -1,0 +1,115 @@
+@model Audicob.Models.Cliente
+@{
+    ViewData["Title"] = "Detalle del Cliente";
+}
+
+<h2 class="mb-4">Detalle del Cliente</h2>
+
+<!-- ✅ Mostrar mensaje de confirmación -->
+@if (TempData["Mensaje"] != null)
+{
+    var mensaje = TempData["Mensaje"].ToString();
+    var esRechazado = mensaje.Contains("rechazado", StringComparison.OrdinalIgnoreCase);
+    var color = esRechazado ? "danger" : "success";
+    <div class="alert alert-@color alert-dismissible fade show" role="alert">
+        @mensaje
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="row mb-3">
+    <div class="col-md-4">
+        <div class="card text-white bg-success mb-3">
+            <div class="card-header">Ingresos Mensuales</div>
+            <div class="card-body">
+                <h5 class="card-title">@Model.IngresosMensuales.ToString("C")</h5>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card text-white bg-danger mb-3">
+            <div class="card-header">Deuda Total</div>
+            <div class="card-body">
+                <h5 class="card-title">@Model.DeudaTotal.ToString("C")</h5>
+            </div>
+        </div>
+    </div>
+
+    @{
+        var estado = Model.EstadoAdmin ?? "Pendiente";
+        var colorEstado = estado == "Aceptado" ? "success" :
+                          estado == "Rechazado" ? "danger" : "secondary";
+    }
+    <div class="col-md-4">
+        <div class="card text-white bg-@colorEstado mb-3">
+            <div class="card-header">Estado Admin</div>
+            <div class="card-body">
+                <h5 class="card-title">@estado</h5>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mb-4" style="max-width: 300px; margin: auto;">
+    <canvas id="deudaChart"></canvas>
+</div>
+
+<div class="card p-3 mb-3">
+    <p><strong>Documento:</strong> @Model.Documento</p>
+    <p><strong>Nombre:</strong> @Model.Nombre</p>
+    <p><strong>Supervisor:</strong> @Model.UsuarioSupervisor</p>
+    <p><strong>Fecha Actualización:</strong> @Model.FechaActualizacion.ToLocalTime().ToString("dd/MM/yyyy")</p>
+</div>
+
+<h3>Decisión del Administrador</h3>
+
+<form asp-action="TomarDecision" method="post">
+    <input type="hidden" name="Id" value="@Model.Id" />
+    <div class="mb-3">
+        <label for="Decision" class="form-label">Decisión</label>
+        <select name="Decision" id="Decision" class="form-select">
+            <option value="Aceptado">Aceptar</option>
+            <option value="Rechazado">Rechazar</option>
+        </select>
+    </div>
+    <div class="mb-3">
+        <label for="Motivo" class="form-label">Motivo (opcional)</label>
+        <textarea name="Motivo" id="Motivo" class="form-control"></textarea>
+    </div>
+    <button type="submit" class="btn btn-success">Guardar Decisión</button>
+</form>
+
+<!-- ✅ Botón para ver los clientes aceptados por admin -->
+<div class="mt-4">
+    <a asp-action="ClientesAceptadosAdmin" asp-controller="ClienteGerente" class="btn btn-primary">
+        Ver Clientes Aceptados por Admin
+    </a>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        var ctx = document.getElementById('deudaChart').getContext('2d');
+        var deudaChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Deuda Total', 'Ingresos Restantes'],
+                datasets: [{
+                    label: 'Proporción Deuda',
+                    data: [@Model.DeudaTotal, Math.max(@Model.IngresosMensuales - @Model.DeudaTotal, 0)],
+                    backgroundColor: ['#dc3545', '#28a745'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { position: 'bottom' },
+                    tooltip: { enabled: true }
+                }
+            }
+        });
+    </script>
+}

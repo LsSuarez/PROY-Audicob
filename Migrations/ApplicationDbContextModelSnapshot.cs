@@ -124,16 +124,10 @@ namespace Audicob.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<int>("ClienteId")
-                        .HasColumnType("integer");
-
                     b.Property<DateTime>("FechaAsignacion")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ClienteId")
-                        .IsUnique();
 
                     b.ToTable("AsignacionesAsesores", (string)null);
                 });
@@ -146,6 +140,9 @@ namespace Audicob.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("AsignacionAsesorId")
+                        .HasColumnType("integer");
+
                     b.Property<decimal>("DeudaTotal")
                         .HasColumnType("numeric(18,2)");
 
@@ -154,11 +151,26 @@ namespace Audicob.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("EstadoAdmin")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<DateTime>("FechaActualizacion")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("FechaDecisionAdmin")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<decimal>("IngresosMensuales")
                         .HasColumnType("numeric(18,2)");
+
+                    b.Property<string>("MotivoAdmin")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
@@ -169,7 +181,13 @@ namespace Audicob.Migrations
                         .HasMaxLength(450)
                         .HasColumnType("character varying(450)");
 
+                    b.Property<string>("UsuarioSupervisor")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("AsignacionAsesorId");
 
                     b.HasIndex("UserId")
                         .IsUnique();
@@ -184,6 +202,10 @@ namespace Audicob.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Clasificacion")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<int>("ClienteId")
                         .HasColumnType("integer");
@@ -246,6 +268,56 @@ namespace Audicob.Migrations
                     b.ToTable("Evaluaciones", (string)null);
                 });
 
+            modelBuilder.Entity("Audicob.Models.HistorialCredito", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CodigoCliente")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("DiasCredito")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("DniCliente")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("EstadoPago")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("FechaOperacion")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("MontoOperacion")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("NombreCliente")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Observaciones")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ProductoServicio")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TipoOperacion")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("HistorialCreditos");
+                });
+
             modelBuilder.Entity("Audicob.Models.LineaCredito", b =>
                 {
                     b.Property<int>("Id")
@@ -274,6 +346,62 @@ namespace Audicob.Migrations
                         .IsUnique();
 
                     b.ToTable("LineasCredito", (string)null);
+                });
+
+            modelBuilder.Entity("Audicob.Models.Notificacion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("AsignacionAsesorId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("ClienteId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Descripcion")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("FechaCreacion")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("FechaLectura")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("IconoTipo")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("Importante")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("Leida")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("SupervisorId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TipoNotificacion")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Titulo")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AsignacionAsesorId");
+
+                    b.HasIndex("ClienteId");
+
+                    b.HasIndex("SupervisorId", "Leida");
+
+                    b.ToTable("Notificaciones");
                 });
 
             modelBuilder.Entity("Audicob.Models.Pago", b =>
@@ -312,6 +440,34 @@ namespace Audicob.Migrations
                     b.HasIndex("ClienteId");
 
                     b.ToTable("Pagos", (string)null);
+                });
+
+            modelBuilder.Entity("Audicob.Models.PagoPendiente", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("ClienteId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Descripcion")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("FechaVencimiento")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("Monto")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClienteId");
+
+                    b.ToTable("PagoPendiente", (string)null);
                 });
 
             modelBuilder.Entity("Audicob.Models.Transaccion", b =>
@@ -490,23 +646,19 @@ namespace Audicob.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("Audicob.Models.AsignacionAsesor", b =>
-                {
-                    b.HasOne("Audicob.Models.Cliente", "Cliente")
-                        .WithOne("AsignacionAsesor")
-                        .HasForeignKey("Audicob.Models.AsignacionAsesor", "ClienteId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Cliente");
-                });
-
             modelBuilder.Entity("Audicob.Models.Cliente", b =>
                 {
+                    b.HasOne("Audicob.Models.AsignacionAsesor", "AsignacionAsesor")
+                        .WithMany("Clientes")
+                        .HasForeignKey("AsignacionAsesorId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("Audicob.Models.ApplicationUser", "Usuario")
                         .WithOne("Cliente")
                         .HasForeignKey("Audicob.Models.Cliente", "UserId")
                         .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("AsignacionAsesor");
 
                     b.Navigation("Usuario");
                 });
@@ -544,6 +696,31 @@ namespace Audicob.Migrations
                     b.Navigation("Cliente");
                 });
 
+            modelBuilder.Entity("Audicob.Models.Notificacion", b =>
+                {
+                    b.HasOne("Audicob.Models.AsignacionAsesor", "AsignacionAsesor")
+                        .WithMany()
+                        .HasForeignKey("AsignacionAsesorId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Audicob.Models.Cliente", "Cliente")
+                        .WithMany()
+                        .HasForeignKey("ClienteId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Audicob.Models.ApplicationUser", "Supervisor")
+                        .WithMany()
+                        .HasForeignKey("SupervisorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AsignacionAsesor");
+
+                    b.Navigation("Cliente");
+
+                    b.Navigation("Supervisor");
+                });
+
             modelBuilder.Entity("Audicob.Models.Pago", b =>
                 {
                     b.HasOne("Audicob.Models.Cliente", "Cliente")
@@ -553,6 +730,13 @@ namespace Audicob.Migrations
                         .IsRequired();
 
                     b.Navigation("Cliente");
+                });
+
+            modelBuilder.Entity("Audicob.Models.PagoPendiente", b =>
+                {
+                    b.HasOne("Audicob.Models.Cliente", null)
+                        .WithMany("PagosPendientes")
+                        .HasForeignKey("ClienteId");
                 });
 
             modelBuilder.Entity("Audicob.Models.Transaccion", b =>
@@ -622,10 +806,13 @@ namespace Audicob.Migrations
                     b.Navigation("Cliente");
                 });
 
+            modelBuilder.Entity("Audicob.Models.AsignacionAsesor", b =>
+                {
+                    b.Navigation("Clientes");
+                });
+
             modelBuilder.Entity("Audicob.Models.Cliente", b =>
                 {
-                    b.Navigation("AsignacionAsesor");
-
                     b.Navigation("Deuda");
 
                     b.Navigation("Evaluaciones");
@@ -633,6 +820,8 @@ namespace Audicob.Migrations
                     b.Navigation("LineaCredito");
 
                     b.Navigation("Pagos");
+
+                    b.Navigation("PagosPendientes");
                 });
 #pragma warning restore 612, 618
         }

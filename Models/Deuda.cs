@@ -9,19 +9,23 @@ namespace Audicob.Models
 
         // Monto original de la deuda, nunca debe ser nulo, por eso se inicializa con un valor válido.
         [Range(0.01, double.MaxValue, ErrorMessage = "El monto debe ser mayor que 0.")]
-        public decimal Monto { get; set; } 
+        public decimal Monto { get; set; }
 
         // Intereses generados por atraso
         public decimal Intereses { get; set; }  // Propiedad de intereses
 
         // Penalidad calculada, esta propiedad se calculará en base a la deuda.
-        public decimal PenalidadCalculada { get; set; } 
+        public decimal PenalidadCalculada { get; set; }
 
         // Total a pagar, es el monto más la penalidad calculada.
-        public decimal TotalAPagar { get; set; } 
+        public decimal TotalAPagar { get; set; }
 
         // Fecha de vencimiento de la deuda, nunca debe ser nula
         public DateTime FechaVencimiento { get; set; }
+
+        // Clasificación de la deuda: Preventiva, Judicial, Extrajudicial
+        [Required(ErrorMessage = "La clasificación es obligatoria.")]
+        public string Clasificacion { get; set; } = "Preventiva";
 
         // Relación con Cliente: un cliente tiene una deuda, por lo tanto se requiere
         public int ClienteId { get; set; }

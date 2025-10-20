@@ -1,0 +1,87 @@
+@model List<Audicob.Models.PagoPendiente>
+
+@{
+    ViewData["Title"] = "Detalle de Deuda Total";
+    decimal total = Model.Sum(d => d.Monto);
+}
+
+<div class="container mt-4">
+    <div class="card shadow border-0"> 
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">💰 Detalle de Deuda Total</h4>
+            <span class="badge bg-light text-dark px-3 py-2">
+                Total: @total.ToString("C")
+            </span>
+        </div>
+
+        <div class="card-body bg-white">
+            @if (Model != null && Model.Count > 0)
+            {
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-secondary">
+                        <tr>
+                            <th>Descripción</th>
+                            <th class="text-end">Monto</th>
+                            <th class="text-center">Fecha de Vencimiento</th>
+                            <th class="text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var deuda in Model)
+                        {
+                            <tr>
+                                <td>@deuda.Descripcion</td>
+                                <td class="text-end fw-semibold text-danger">@deuda.Monto.ToString("C")</td>
+                                <td class="text-center">@deuda.FechaVencimiento.ToShortDateString()</td>
+                                <td class="text-center">
+                                    <button class="btn btn-outline-primary btn-sm px-3"
+                                            onclick="mostrarDetalle(@deuda.Id, this)">
+                                        <i class="bi bi-eye"></i> Detalle
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr class="detalle-row" style="display:none;">
+                                <td colspan="4" class="p-0 detalle-container"></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <div class="alert alert-success text-center my-3">
+                    🎉 No tienes deudas pendientes
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    async function mostrarDetalle(id, boton) {
+        const fila = boton.closest('tr').nextElementSibling;
+        const contenedor = fila.querySelector('.detalle-container');
+
+        if (fila.style.display === 'table-row') {
+            fila.style.display = 'none';
+            contenedor.innerHTML = '';
+            return;
+        }
+
+        const response = await fetch(`/Cliente/DetallePago?id=${id}`);
+        if (!response.ok) {
+            contenedor.innerHTML = `
+                <div class="p-3 text-danger text-center bg-light border-top">
+                    ❌ No se pudo cargar el detalle.
+                </div>`;
+            fila.style.display = 'table-row';
+            return;
+        }
+
+        const html = await response.text();
+        contenedor.innerHTML = html;
+        fila.style.display = 'table-row';
+    }
+</script>
+}

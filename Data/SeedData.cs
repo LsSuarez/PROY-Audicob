@@ -143,33 +143,26 @@ namespace Audicob.Data.SeedData
                 // NUEVO: Asignar clientes al asesor
                 if (asesorUser != null)
                 {
-                    db.AsignacionesAsesores.AddRange(
-                        new AsignacionAsesor
+                    // Creamos un nuevo registro de asignación para el asesor
+                    var asignacionAsesor = new AsignacionAsesor
+                    {
+                        AsesorUserId = asesorUser.Id,
+                        AsesorNombre = asesorUser.FullName,
+                        FechaAsignacion = DateTime.UtcNow,
+                        Clientes = new List<Cliente>
                         {
-                            AsesorUserId = asesorUser.Id,
-                            AsesorNombre = asesorUser.FullName,
-                            ClienteId = cliente1.Id,
-                            FechaAsignacion = DateTime.UtcNow
-                        },
-                        new AsignacionAsesor
-                        {
-                            AsesorUserId = asesorUser.Id,
-                            AsesorNombre = asesorUser.FullName,
-                            ClienteId = cliente2.Id,
-                            FechaAsignacion = DateTime.UtcNow
-                        },
-                        new AsignacionAsesor
-                        {
-                            AsesorUserId = asesorUser.Id,
-                            AsesorNombre = asesorUser.FullName,
-                            ClienteId = cliente3.Id,
-                            FechaAsignacion = DateTime.UtcNow
+                            cliente1,
+                            cliente2,
+                            cliente3
                         }
-                    );
+                    };
+
+                    db.AsignacionesAsesores.Add(asignacionAsesor);
                 }
 
+
                 await db.SaveChangesAsync();
-                
+
                 Console.WriteLine("✅ Datos de ejemplo creados exitosamente:");
                 Console.WriteLine($"   - 3 Clientes");
                 Console.WriteLine($"   - 3 Deudas");

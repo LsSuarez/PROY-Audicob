@@ -1,0 +1,201 @@
+@model Audicob.Models.ViewModels.Cliente.ClienteDashboardViewModel
+
+@{
+    ViewData["Title"] = "Segmentar Clientes - Supervisor";
+}
+
+<div id="content" class="content">
+    <div class="seccion-contenido">
+        <div class="seccion-encabezado">
+            <h2 class="seccion-titulo">Lista de Clientes Sin Asignar</h2>
+        </div>
+
+        <!-- FILTROS -->
+        <form method="get" asp-action="Index" class="mb-3">
+            <div class="row">
+                <div class="col-md-3">
+                    <label for="filtro" class="form-label">Buscar por nombre o DNI</label>
+                    <input type="text" id="filtro" name="filtro" value="@Model.Filtro" class="form-control"
+                        placeholder="Nombre o DNI" />
+                </div>
+
+                <div class="col-md-2">
+                    <label for="deudaMin" class="form-label">Deuda Mínima</label>
+                    <input type="number" id="deudaMin" name="deudaMin" value="@Model.DeudaMin" 
+                        class="form-control" placeholder="0" step="0.01" />
+                </div>
+
+                <div class="col-md-2">
+                    <label for="deudaMax" class="form-label">Deuda Máxima</label>
+                    <input type="number" id="deudaMax" name="deudaMax" value="@Model.DeudaMax" 
+                        class="form-control" placeholder="999999" step="0.01" />
+                </div>
+
+                <div class="col-md-3">
+                    <label for="clasificacion" class="form-label">Clasificación</label>
+                    <select id="clasificacion" name="clasificacion" class="form-select">
+                        <option value="">-- Todas --</option>
+                        <option value="Preventiva" selected="@(Model.Clasificacion == "Preventiva")">
+                            Preventiva
+                        </option>
+                        <option value="Judicial" selected="@(Model.Clasificacion == "Judicial")">
+                            Judicial
+                        </option>
+                        <option value="Extrajudicial" selected="@(Model.Clasificacion == "Extrajudicial")">
+                            Extrajudicial
+                        </option>
+                    </select>
+                </div>
+
+                <div class="col-md-2 d-flex align-items-end gap-2">
+                    <button type="submit" class="btn btn-primary w-100">Buscar</button>
+                    <a href="@Url.Action("Index", "AsigSupervisor")" class="btn btn-secondary w-100">Limpiar</a>
+                </div>
+            </div>
+        </form>
+
+        <!-- TABLA CLIENTES SIN ASIGNAR -->
+        <div class="contenedor-tabla mt-3">
+            <h5 class="mb-3">Clientes Disponibles para Asignar</h5>
+            <table class="table table-bordered table-hover">
+                <thead class="table-primary">
+                    <tr>
+                        <th>Id</th>
+                        <th>DNI</th>
+                        <th>Nombre</th>
+                        <th>Deuda Total</th>
+                        <th>Clasificación</th>
+                        <th>Asesor</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.ListCliente != null && Model.ListCliente.Any())
+                    {
+                        foreach (var item in Model.ListCliente)
+                        {
+                            <tr>
+                                <td>@item.Id</td>
+                                <td>@item.Documento</td>
+                                <td>@item.Nombre</td>
+                                <td>@item.DeudaTotal.ToString("C")</td>
+                                <td>@(item.Deuda?.Clasificacion ?? "N/A")</td>
+                                <td>
+                                    <select class="form-select form-select-sm selectAsesor" data-cliente-id="@item.Id">
+                                        <option value="">-- Seleccione --</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-success btn-sm btnAsignar" data-cliente-id="@item.Id" data-cliente-nombre="@item.Nombre">
+                                        Asignar
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center text-muted">No se encontraron clientes sin asignar.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- TABLA ASIGNACIONES ACTUALES -->
+        <div class="mt-5">
+            <h5 class="mb-3">Asignaciones Actuales</h5>
+            <div id="asignacionesContainer">
+                <p class="text-muted">Cargando asignaciones...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Cargar asesores
+        function cargarAsesores() {
+            fetch("/AsigSupervisor/ObtenerAsesores")
+                .then(response => response.json())
+                .then(asesores => {
+                    console.log("Asesores recibidos:", asesores);
+                    let opciones = '<option value="">-- Seleccione --</option>';
+                    asesores.forEach(asesor => {
+                        opciones += `<option value="${asesor.id}">${asesor.nombre}</option>`;
+                    });
+                    document.querySelectorAll(".selectAsesor").forEach(select => {
+                        select.innerHTML = opciones;
+                    });
+                })
+                .catch(error => console.error("Error cargando asesores:", error));
+        }
+
+        // Cargar asignaciones
+        function cargarAsignaciones() {
+            fetch("/AsigSupervisor/ObtenerAsignaciones")
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById("asignacionesContainer").innerHTML = html;
+                })
+                .catch(error => {
+                    console.error("Error cargando asignaciones:", error);
+                    document.getElementById("asignacionesContainer").innerHTML = '<p class="text-danger">Error al cargar asignaciones</p>';
+                });
+        }
+
+        // Evento click en botones Asignar
+        document.addEventListener("click", function(e) {
+            if (e.target.classList.contains("btnAsignar")) {
+                const btn = e.target;
+                const fila = btn.closest("tr");
+                const clienteId = btn.getAttribute("data-cliente-id");
+                const clienteNombre = btn.getAttribute("data-cliente-nombre");
+                const asesorId = fila.querySelector(".selectAsesor").value;
+
+                console.log("Asignando - Cliente:", clienteId, "Asesor:", asesorId);
+
+                if (!asesorId) {
+                    alert("Por favor selecciona un asesor");
+                    return;
+                }
+
+                fetch("/AsigSupervisor/GuardarAsignacion", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    body: `clienteId=${clienteId}&asesorId=${asesorId}`
+                })
+                .then(response => {
+                    if (response.ok) {
+                        alert("Cliente asignado correctamente");
+                        // Eliminar la fila de la tabla
+                        fila.remove();
+                        // Actualizar tabla de asignaciones
+                        cargarAsignaciones();
+                        // Verificar si hay más clientes
+                        const filas = document.querySelectorAll("tbody tr");
+                        if (filas.length === 0) {
+                            document.querySelector("tbody").innerHTML = '<tr><td colspan="7" class="text-center text-muted">No se encontraron clientes sin asignar.</td></tr>';
+                        }
+                    } else {
+                        alert("Error al asignar");
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    alert("Error al asignar: " + error);
+                });
+            }
+        });
+
+        // Inicializar al cargar la página
+        document.addEventListener("DOMContentLoaded", function() {
+            console.log("Página cargada");
+            cargarAsesores();
+            cargarAsignaciones();
+        });
+    </script>
+}
