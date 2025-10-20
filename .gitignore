@@ -1,0 +1,7 @@
+# Archivos temporales y compilados
+bin/
+obj/
+*.log
+*.cache
+*.user
+*.vs/
