@@ -1,5 +1,6 @@
 using Audicob.Data;
 using Audicob.Models;
+using Audicob.Models.ViewModels.Asesor;
 using Audicob.Models.ViewModels.Supervisor;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -392,5 +393,50 @@ namespace Audicob.Controllers
                 .Include(c => c.LineaCredito)
                 .FirstOrDefaultAsync(c => c.Id == clienteId);
         }
+        //HU11: Gestionar asignación de asesores
+        // GET: Mostrar la lista de asesores asignados
+        public async Task<IActionResult> GestionAsignacion()
+        {
+            var asesores = await _db.AsesoresAsignados.ToListAsync();
+            return View(asesores);
+        }
+
+        // POST: Reportar la asignación (copiar los datos y registrar en la tabla ReportesAsignacion)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ReportarAsignacion()
+        {
+            var asesores = await _db.AsesoresAsignados.ToListAsync();
+
+            if (!asesores.Any())
+            {
+                TempData["Error"] = "No hay datos para reportar.";
+                return RedirectToAction("GestionAsignacion");
+            }
+
+            var user = await _userManager.GetUserAsync(User);
+
+            foreach (var a in asesores)
+            {
+                var reporte = new ReporteAsignacion
+                {
+                    AsesorNombre = a.AsesorNombre,
+                    CantidadCarteras = a.CantidadCarteras,
+                    MontoTotal = a.MontoTotal,
+                    CantidadCuentas = a.CantidadCuentas,
+                    Estado = a.Estado,
+                    Responsable = user.FullName ?? user.UserName,
+                    FechaRegistro = DateTime.UtcNow
+                };
+
+                _db.ReportesAsignacion.Add(reporte);
+            }
+
+            await _db.SaveChangesAsync();
+
+            TempData["Success"] = "Asignaciones reportadas exitosamente.";
+            return RedirectToAction("GestionAsignacion");
+        }
+
     }
 }

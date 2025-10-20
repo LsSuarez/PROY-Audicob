@@ -1,0 +1,44 @@
+@model IEnumerable<Audicob.Models.AsesorAsignado>
+
+@{
+    ViewData["Title"] = "Gestión de Asignación de Carteras";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+@if (!Model.Any())
+{
+    <p>No hay asesores asignados registrados.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>Asesor</th>
+                <th>Cantidad de Carteras</th>
+                <th>Monto Total</th>
+                <th>Cantidad de Cuentas</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.AsesorNombre</td>
+                    <td>@item.CantidadCarteras</td>
+                    <td>S/ @item.MontoTotal</td>
+                    <td>@item.CantidadCuentas</td>
+                    <td>@item.Estado</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <form asp-action="ReportarAsignacion" method="post">
+        <button type="submit" class="btn btn-primary float-end">
+            Reportar asignación de cartera
+        </button>
+    </form>
+}
