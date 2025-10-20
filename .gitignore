@@ -1,0 +1,28 @@
+# Archivos de compilación
+bin/
+obj/
+*.exe
+*.dll
+*.pdb
+
+# Configuración local
+.vs/
+*.user
+*.suo
+*.userosscache
+
+# Publicaciones
+publish/
+*.Publish.xml
+
+# Archivos temporales
+*.tmp
+*.log
+
+# Archivos de dependencia
+node_modules/
+wwwroot/lib/
+
+# Secretos o configuración local
+appsettings.Development.json
+appsettings.Local.json

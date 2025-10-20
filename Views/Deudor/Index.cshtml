@@ -1,0 +1,142 @@
+@model List<Audicob.Models.ViewModels.DeudorVM>
+@{
+    ViewData["Title"] = "Deudores";
+    var ordenarPor = (string?)ViewBag.OrdenarPor ?? "Criticidad";
+    var buscar = (string?)ViewBag.Buscar ?? "";
+    string BadgeClass(Audicob.Models.ViewModels.NivelCriticidad c) => c switch {
+        Audicob.Models.ViewModels.NivelCriticidad.Critico => "critico",
+        Audicob.Models.ViewModels.NivelCriticidad.Alto    => "alto",
+        Audicob.Models.ViewModels.NivelCriticidad.Medio   => "medio",
+        _                                                 => "bajo"
+    };
+}
+
+<style>
+    /* ====== Estilos “prototype-like” ====== */
+    body { background: #f7f5f2; }
+    .app-shell { max-width: 980px; margin: 24px auto; padding: 16px; }
+    .app-card {
+        background: #ffffff; border: 1px solid #eee7df;
+        border-radius: 18px; box-shadow: 0 1px 0 rgba(0,0,0,.02);
+        padding: 18px 22px;
+    }
+    .app-header { display:flex; align-items:center; justify-content:space-between; }
+    .brand { font-weight:800; letter-spacing:.2px; font-size:28px; color:#191918; }
+    .header-icons { display:flex; gap:10px; }
+    .icon-chip {
+        width:36px; height:36px; border-radius:12px; display:grid; place-items:center;
+        background:#faf7f4; border:1px solid #efe7de; color:#6e6a65; font-size:16px;
+    }
+
+    .h-title { font-size:32px; font-weight:800; color:#1b1b1a; margin:16px 0 10px; }
+
+    .toolbar { display:flex; gap:12px; align-items:center; margin:8px 0 16px; flex-wrap:wrap; }
+    .control { display:flex; align-items:center; gap:8px; }
+    .select, .search {
+        height:40px; border:1px solid #e9e3db; background:#fff; color:#1b1b1a;
+        border-radius:10px; padding:0 12px; font-size:14px;
+    }
+    .select { min-width:180px; }
+    .search { min-width:280px; }
+    .btn-priorizar {
+        height:40px; padding:0 16px; border:none; border-radius:10px;
+        background:#e3554f; color:#fff; font-weight:700; letter-spacing:.2px;
+        box-shadow: 0 2px 0 rgba(0,0,0,.05);
+    }
+    .btn-priorizar:hover { background:#d84a45; }
+
+    table { width:100%; border-collapse:separate; border-spacing:0 10px; }
+    thead th { font-size:13px; color:#6e6a65; font-weight:700; padding:0 10px 6px; }
+    tbody tr {
+        background:#fff; border:1px solid #eee7df; border-radius:12px;
+        box-shadow: 0 1px 0 rgba(0,0,0,.02);
+    }
+    tbody td {
+        padding:14px 10px; border-top:1px solid #eee7df;
+    }
+    tbody tr:first-child td { border-top:none; }
+    tbody tr td:first-child { border-left:none; border-radius:12px 0 0 12px; }
+    tbody tr td:last-child { border-right:none; border-radius:0 12px 12px 0; }
+
+    .chip {
+        display:inline-flex; align-items:center; gap:6px; font-weight:700; font-size:12px;
+        padding:6px 10px; border-radius:999px; border:1px solid transparent;
+    }
+    .chip .dot { width:16px; height:16px; border-radius:999px; display:grid; place-items:center; font-size:11px; }
+
+    .chip.critico { background:#fee2e1; color:#9b1c16; border-color:#f7c7c5; }
+    .chip.critico .dot { background:#ef4444; color:#fff; }
+    .chip.alto    { background:#fdecc8; color:#8a5a00; border-color:#f6deaa; }
+    .chip.alto .dot { background:#f59e0b; color:#fff; }
+
+    .chip.medio   { background:#e6f3ff; color:#0b5aa8; border-color:#cfe8ff; }
+    .chip.bajo    { background:#eef2f6; color:#3a4856; border-color:#e0e7ef; }
+</style>
+
+<div class="app-shell">
+    <div class="app-card">
+        <!-- Header -->
+        <div class="app-header">
+            <div class="brand">Audicob</div>
+            <div class="header-icons">
+                <div class="icon-chip" title="Alertas">🔔</div>
+                <div class="icon-chip" title="Ayuda">❓</div>
+                <div class="icon-chip" title="Perfil">👤</div>
+            </div>
+        </div>
+
+        <div class="h-title">Deudores</div>
+
+        <!-- Toolbar -->
+        <div class="toolbar">
+            <form method="get" class="control" style="gap:12px;">
+                <div class="control">
+                    <span style="font-size:13px; color:#6e6a65;">Ordenar por:</span>
+                    <select name="ordenarPor" class="select" onchange="this.form.submit()">
+                        <option value="Criticidad" selected="@("Criticidad"==ordenarPor)">Criticidad</option>
+                        <option value="Monto" selected="@("Monto"==ordenarPor)">Monto</option>
+                        <option value="Antigüedad" selected="@("Antigüedad"==ordenarPor)">Antigüedad</option>
+                    </select>
+                </div>
+                <div class="control" style="flex:1;">
+                    <span>🔎</span>
+                    <input class="search" name="buscar" value="@buscar" placeholder="Buscar" />
+                </div>
+            </form>
+
+            <form method="post" asp-action="Priorizar" class="control">
+                <input type="hidden" name="ordenarPor" value="@ordenarPor" />
+                <input type="hidden" name="buscar" value="@buscar" />
+                <button class="btn-priorizar" type="submit">Priorizar</button>
+            </form>
+        </div>
+
+        <!-- Tabla -->
+        <table>
+            <thead>
+                <tr>
+                    <th>Cliente</th>
+                    <th>Monto</th>
+                    <th>Antigüedad</th>
+                    <th>Criticidad</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var d in Model)
+            {
+                <tr>
+                    <td>@d.Cliente</td>
+                    <td>@d.Monto.ToString("C")</td>
+                    <td>@d.AntiguedadDias días</td>
+                    <td>
+                        <span class="chip @BadgeClass(d.Criticidad)">
+                            <span class="dot">⚠️</span>
+                            @d.Criticidad
+                        </span>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>
