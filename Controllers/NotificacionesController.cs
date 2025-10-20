@@ -13,15 +13,18 @@ namespace Audicob.Controllers
         private readonly INotificacionService _notificacionService;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger<NotificacionesController> _logger;
+        private readonly IPdfService _pdfService;
 
         public NotificacionesController(
             INotificacionService notificacionService,
             UserManager<ApplicationUser> userManager,
-            ILogger<NotificacionesController> logger)
+            ILogger<NotificacionesController> logger,
+            IPdfService pdfService)
         {
             _notificacionService = notificacionService;
             _userManager = userManager;
             _logger = logger;
+            _pdfService = pdfService;
         }
 
         // Vista principal de notificaciones
@@ -73,7 +76,7 @@ namespace Audicob.Controllers
 
                 var notificaciones = await _notificacionService.ObtenerNotificacionesUsuario(usuarioId);
                 var notificacionesNoLeidas = notificaciones.Where(n => !n.Leida).ToList();
-                
+
                 if (notificacionesNoLeidas.Any())
                 {
                     foreach (var notif in notificacionesNoLeidas)
@@ -93,6 +96,31 @@ namespace Audicob.Controllers
             {
                 _logger.LogError(ex, "Error al marcar todas las notificaciones");
                 TempData["Error"] = "Error al procesar las notificaciones";
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
+        // Exportar notificaciones a PDF
+        [HttpGet]
+        public async Task<IActionResult> ExportarPdf()
+        {
+            try
+            {
+                var usuarioId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(usuarioId))
+                    return Unauthorized();
+
+                var usuario = await _userManager.FindByIdAsync(usuarioId);
+                var notificaciones = await _notificacionService.ObtenerNotificacionesUsuario(usuarioId);
+
+                var pdfBytes = _pdfService.GenerarPdfNotificaciones(notificaciones, usuario.UserName);
+
+                return File(pdfBytes, "application/pdf", "Notificaciones.pdf");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al exportar PDF");
+                TempData["Error"] = "Error al generar el PDF";
                 return RedirectToAction(nameof(Index));
             }
         }

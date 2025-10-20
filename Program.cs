@@ -46,11 +46,12 @@ namespace Audicob
                     // Manejar referencias circulares
                     options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
                 });
-            
+
             builder.Services.AddRazorPages(); // Configuración de Razor Pages
 
             // 📬 SERVICIOS DE NOTIFICACIONES
             builder.Services.AddScoped<INotificacionService, NotificacionService>();
+            builder.Services.AddScoped<IPdfService, PdfService>();
             builder.Services.AddHostedService<RecordatorioHostedService>();
 
             // 🔧 Configuración del middleware de la aplicación

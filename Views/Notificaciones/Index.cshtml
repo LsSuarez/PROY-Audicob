@@ -16,6 +16,10 @@
             <p class="text-muted">Tienes @noLeidas notificación(es) sin leer</p>
         </div>
         <div class="col-md-4 text-end">
+            <a asp-action="ExportarPdf" class="btn btn-outline-danger me-2" title="Exportar a PDF">
+                <i class="bi bi-file-pdf me-1"></i>
+                Exportar PDF
+            </a>
             @if (noLeidas > 0)
             {
                 <form asp-action="MarcarTodasLeidas" method="post" style="display: inline;">

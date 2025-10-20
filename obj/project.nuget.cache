@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "dVfewj8TZqU=",
+  "dgSpecHash": "XSxpa1Lp3jw=",
   "success": true,
   "projectFilePath": "/workspaces/PROY-Audicob/Audicob.csproj",
   "expectedPackageFiles": [
@@ -50,6 +50,7 @@
     "/home/codespace/.nuget/packages/netstandard.library/1.6.0/netstandard.library.1.6.0.nupkg.sha512",
     "/home/codespace/.nuget/packages/npgsql/9.0.3/npgsql.9.0.3.nupkg.sha512",
     "/home/codespace/.nuget/packages/npgsql.entityframeworkcore.postgresql/9.0.4/npgsql.entityframeworkcore.postgresql.9.0.4.nupkg.sha512",
+    "/home/codespace/.nuget/packages/questpdf/2025.7.3/questpdf.2025.7.3.nupkg.sha512",
     "/home/codespace/.nuget/packages/runtime.native.system/4.0.0/runtime.native.system.4.0.0.nupkg.sha512",
     "/home/codespace/.nuget/packages/runtime.native.system.io.compression/4.1.0/runtime.native.system.io.compression.4.1.0.nupkg.sha512",
     "/home/codespace/.nuget/packages/runtime.native.system.net.http/4.0.1/runtime.native.system.net.http.4.0.1.nupkg.sha512",
