@@ -1,7 +1,28 @@
-# Archivos temporales y compilados
+# Archivos de compilación
 bin/
 obj/
-*.log
-*.cache
+*.exe
+*.dll
+*.pdb
+
+# Configuración local
+.vs/
 *.user
-*.vs/
+*.suo
+*.userosscache
+
+# Publicaciones
+publish/
+*.Publish.xml
+
+# Archivos temporales
+*.tmp
+*.log
+
+# Archivos de dependencia
+node_modules/
+wwwroot/lib/
+
+# Secretos o configuración local
+appsettings.Development.json
+appsettings.Local.json
