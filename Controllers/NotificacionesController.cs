@@ -1,31 +1,21 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
+using Audicob.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
+using Audicob.Models;
+using System.Security.Claims;
 
 namespace Audicob.Controllers
 {
-    using Audicob.Data;
-    using Audicob.Models;
-    using Audicob.Services;
-    using Microsoft.AspNetCore.Authorization;
-    using Microsoft.AspNetCore.Identity;
-    using Microsoft.AspNetCore.Mvc;
-    using System.Security.Claims;
-
-    [Route("api/[controller]")]
-    [ApiController]
-    [Authorize]
-    public class NotificacionesController : ControllerBase
+    [Authorize(Roles = "Supervisor")]
+    public class NotificacionesController : Controller
     {
         private readonly INotificacionService _notificacionService;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger<NotificacionesController> _logger;
 
-        public NotificacionesController(INotificacionService notificacionService,
+        public NotificacionesController(
+            INotificacionService notificacionService,
             UserManager<ApplicationUser> userManager,
             ILogger<NotificacionesController> logger)
         {
@@ -34,8 +24,8 @@ namespace Audicob.Controllers
             _logger = logger;
         }
 
-        [HttpGet("mis-notificaciones")]
-        public async Task<IActionResult> ObtenerMisNotificaciones()
+        // Vista principal de notificaciones
+        public async Task<IActionResult> Index()
         {
             try
             {
@@ -44,17 +34,36 @@ namespace Audicob.Controllers
                     return Unauthorized();
 
                 var notificaciones = await _notificacionService.ObtenerNotificacionesUsuario(usuarioId);
-                return Ok(notificaciones);
+                return View(notificaciones);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al obtener notificaciones");
-                return StatusCode(500, new { error = "Error al obtener notificaciones" });
+                _logger.LogError(ex, "Error al cargar notificaciones");
+                TempData["Error"] = "Error al cargar las notificaciones";
+                return RedirectToAction("Index", "Home");
             }
         }
 
-        [HttpGet("no-leidas-count")]
-        public async Task<IActionResult> ObtenerNotificacionesNoLeidasCount()
+        // Marcar como leída desde la vista
+        [HttpPost]
+        public async Task<IActionResult> MarcarLeida(int id)
+        {
+            try
+            {
+                await _notificacionService.MarcarComoLeida(id);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al marcar notificación");
+                TempData["Error"] = "Error al procesar la notificación";
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
+        // Marcar todas como leídas
+        [HttpPost]
+        public async Task<IActionResult> MarcarTodasLeidas()
         {
             try
             {
@@ -62,28 +71,20 @@ namespace Audicob.Controllers
                 if (string.IsNullOrEmpty(usuarioId))
                     return Unauthorized();
 
-                var count = await _notificacionService.ObtenerNotificacionesNoLeidasCount(usuarioId);
-                return Ok(new { noLeidas = count });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error al obtener count de notificaciones");
-                return StatusCode(500, new { error = "Error al obtener notificaciones" });
-            }
-        }
+                var notificaciones = await _notificacionService.ObtenerNotificacionesUsuario(usuarioId);
+                foreach (var notif in notificaciones.Where(n => !n.Leida))
+                {
+                    await _notificacionService.MarcarComoLeida(notif.Id);
+                }
 
-        [HttpPost("marcar-leida/{id}")]
-        public async Task<IActionResult> MarcarComoLeida(int id)
-        {
-            try
-            {
-                await _notificacionService.MarcarComoLeida(id);
-                return Ok(new { mensaje = "Notificación marcada como leída" });
+                TempData["Success"] = "Todas las notificaciones marcadas como leídas";
+                return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al marcar notificación");
-                return StatusCode(500, new { error = "Error al procesar la solicitud" });
+                _logger.LogError(ex, "Error al marcar todas las notificaciones");
+                TempData["Error"] = "Error al procesar las notificaciones";
+                return RedirectToAction(nameof(Index));
             }
         }
     }

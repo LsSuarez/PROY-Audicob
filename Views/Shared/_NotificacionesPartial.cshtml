@@ -1,10 +1,6 @@
 @using Microsoft.AspNetCore.Identity
 @inject UserManager<ApplicationUser> UserManager
 
-@{
-    var usuario = await UserManager.GetUserAsync(User);
-}
-
 <!-- Campana de Notificaciones -->
 <div class="dropdown" id="notificacionesDropdown">
     <button class="btn btn-link position-relative" type="button" id="notificacionesBtn" data-bs-toggle="dropdown"
@@ -29,8 +25,9 @@
             </div>
         </div>
         <div class="dropdown-divider"></div>
-        <a class="dropdown-item text-center small" href="@Url.Action("Index", "Notificaciones")">Ver todas las
-            notificaciones</a>
+        <a class="dropdown-item text-center small" href="@Url.Action("Index", "Notificaciones")">
+            Ver todas las notificaciones
+        </a>
     </div>
 </div>
 
@@ -63,12 +60,17 @@
     .notificacion-titulo {
         font-weight: 600;
         margin-bottom: 3px;
+        font-size: 0.9rem;
     }
 
     .notificacion-descripcion {
         font-size: 0.85rem;
         color: #666;
         margin-bottom: 3px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
     }
 
     .notificacion-fecha {
@@ -87,12 +89,23 @@
 
     function cargarNotificaciones() {
         fetch('/api/notificaciones/mis-notificaciones')
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error en la respuesta del servidor');
+                }
+                return response.json();
+            })
             .then(data => {
-                mostrarNotificaciones(data);
+                // Mostrar solo las 5 más recientes en el dropdown
+                const notificacionesRecientes = data.slice(0, 5);
+                mostrarNotificaciones(notificacionesRecientes);
                 actualizarContador(data);
             })
-            .catch(error => console.error('Error al cargar notificaciones:', error));
+            .catch(error => {
+                console.error('Error al cargar notificaciones:', error);
+                const lista = document.getElementById('listaNotificaciones');
+                lista.innerHTML = '<div class="text-center p-3"><small class="text-danger">Error al cargar notificaciones</small></div>';
+            });
     }
 
     function mostrarNotificaciones(notificaciones) {
@@ -106,14 +119,14 @@
         let html = '';
         notificaciones.forEach(notificacion => {
             const claseNoLeida = notificacion.leida ? '' : 'no-leida';
-            const fecha = new Date(notificacion.fechaCreacion).toLocaleString('es-ES');
+            const fecha = formatearFecha(notificacion.fechaCreacion);
 
             html += `
             <div class="notificacion-item ${claseNoLeida} d-flex align-items-start" onclick="marcarComoLeida(${notificacion.id})">
                 <span class="notificacion-icono">${notificacion.iconoTipo || '📋'}</span>
                 <div class="notificacion-contenido">
-                    <div class="notificacion-titulo">${notificacion.titulo}</div>
-                    <div class="notificacion-descripcion">${notificacion.descripcion}</div>
+                    <div class="notificacion-titulo">${escapeHtml(notificacion.titulo)}</div>
+                    <div class="notificacion-descripcion">${escapeHtml(notificacion.descripcion)}</div>
                     <div class="notificacion-fecha">${fecha}</div>
                 </div>
             </div>
@@ -128,7 +141,7 @@
         const badge = document.getElementById('contadorNotificaciones');
 
         if (contador > 0) {
-            badge.textContent = contador;
+            badge.textContent = contador > 99 ? '99+' : contador;
             badge.style.display = 'inline-block';
         } else {
             badge.style.display = 'none';
@@ -139,13 +152,45 @@
         fetch(`/api/notificaciones/marcar-leida/${id}`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
             }
         })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al marcar notificación');
+                }
+                return response.json();
+            })
             .then(() => {
                 cargarNotificaciones();
             })
             .catch(error => console.error('Error al marcar notificación:', error));
+    }
+
+    function formatearFecha(fechaString) {
+        const fecha = new Date(fechaString);
+        const ahora = new Date();
+        const diferencia = ahora - fecha;
+        const minutos = Math.floor(diferencia / 60000);
+        const horas = Math.floor(diferencia / 3600000);
+        const dias = Math.floor(diferencia / 86400000);
+
+        if (minutos < 1) return 'Ahora';
+        if (minutos < 60) return `Hace ${minutos} min`;
+        if (horas < 24) return `Hace ${horas} h`;
+        if (dias < 7) return `Hace ${dias} d`;
+
+        return fecha.toLocaleDateString('es-ES', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
 </script>
