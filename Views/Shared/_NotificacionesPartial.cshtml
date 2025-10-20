@@ -90,12 +90,19 @@
     function cargarNotificaciones() {
         fetch('/api/notificaciones/mis-notificaciones')
             .then(response => {
+                console.log('Response status:', response.status);
                 if (!response.ok) {
-                    throw new Error('Error en la respuesta del servidor');
+                    return response.json().then(err => {
+                        throw new Error(err.error || 'Error en la respuesta del servidor');
+                    });
                 }
                 return response.json();
             })
             .then(data => {
+                console.log('Notificaciones recibidas:', data);
+                if (!Array.isArray(data)) {
+                    throw new Error('Formato de datos inválido');
+                }
                 // Mostrar solo las 5 más recientes en el dropdown
                 const notificacionesRecientes = data.slice(0, 5);
                 mostrarNotificaciones(notificacionesRecientes);
@@ -104,7 +111,7 @@
             .catch(error => {
                 console.error('Error al cargar notificaciones:', error);
                 const lista = document.getElementById('listaNotificaciones');
-                lista.innerHTML = '<div class="text-center p-3"><small class="text-danger">Error al cargar notificaciones</small></div>';
+                lista.innerHTML = `<div class="text-center p-3"><small class="text-danger">Error: ${error.message}</small></div>`;
             });
     }
 
@@ -120,6 +127,14 @@
         notificaciones.forEach(notificacion => {
             const claseNoLeida = notificacion.leida ? '' : 'no-leida';
             const fecha = formatearFecha(notificacion.fechaCreacion);
+            
+            // Debug: ver fechas en consola
+            console.log('Notificación:', {
+                titulo: notificacion.titulo,
+                fechaCreacion: notificacion.fechaCreacion,
+                fechaLectura: notificacion.fechaLectura,
+                leida: notificacion.leida
+            });
 
             html += `
             <div class="notificacion-item ${claseNoLeida} d-flex align-items-start" onclick="marcarComoLeida(${notificacion.id})">
@@ -180,11 +195,11 @@
         if (minutos < 60) return `Hace ${minutos} min`;
         if (horas < 24) return `Hace ${horas} h`;
         if (dias < 7) return `Hace ${dias} d`;
-
-        return fecha.toLocaleDateString('es-ES', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric'
+        
+        return fecha.toLocaleDateString('es-ES', { 
+            day: '2-digit', 
+            month: '2-digit', 
+            year: 'numeric' 
         });
     }
 

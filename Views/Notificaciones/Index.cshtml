@@ -1,4 +1,5 @@
 @model List<Audicob.Models.Notificacion>
+@using Audicob.Helpers
 
 @{
     ViewData["Title"] = "Mis Notificaciones";
@@ -30,7 +31,17 @@
     @if (TempData["Success"] != null)
     {
         <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>
             @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["Info"] != null)
+    {
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            <i class="bi bi-info-circle me-2"></i>
+            @TempData["Info"]
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     }
@@ -38,6 +49,7 @@
     @if (TempData["Error"] != null)
     {
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>
             @TempData["Error"]
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
@@ -63,7 +75,7 @@
                         {
                             var claseNoLeida = notificacion.Leida ? "" : "bg-light border-start border-primary border-4";
                             var iconoClass = notificacion.Leida ? "text-muted" : "text-primary";
-
+                            
                             <div class="list-group-item @claseNoLeida">
                                 <div class="row align-items-center">
                                     <div class="col-auto">
@@ -77,11 +89,11 @@
                                                 @notificacion.Titulo
                                             </h5>
                                             <small class="text-muted">
-                                                @notificacion.FechaCreacion.ToString("dd/MM/yyyy HH:mm")
+                                                @DateTimeHelper.ConvertToPeruTime(notificacion.FechaCreacion).ToString("dd/MM/yyyy HH:mm")
                                             </small>
                                         </div>
                                         <p class="mb-1">@notificacion.Descripcion</p>
-
+                                        
                                         @if (notificacion.Cliente != null)
                                         {
                                             <small class="text-muted">
@@ -93,8 +105,7 @@
                                         @if (!notificacion.Leida)
                                         {
                                             <div class="mt-2">
-                                                <form asp-action="MarcarLeida" asp-route-id="@notificacion.Id" method="post"
-                                                    style="display: inline;">
+                                                <form asp-action="MarcarLeida" asp-route-id="@notificacion.Id" method="post" style="display: inline;">
                                                     <button type="submit" class="btn btn-sm btn-outline-primary">
                                                         <i class="bi bi-check me-1"></i>
                                                         Marcar como leída
@@ -107,8 +118,7 @@
                                             <div class="mt-2">
                                                 <span class="badge bg-success">
                                                     <i class="bi bi-check-circle me-1"></i>
-                                                    Leída @(notificacion.FechaLectura.HasValue ?
-                                                                                notificacion.FechaLectura.Value.ToString("dd/MM/yyyy HH:mm") : "")
+                                                    Leída @(notificacion.FechaLectura.HasValue ? DateTimeHelper.ConvertToPeruTime(notificacion.FechaLectura.Value).ToString("dd/MM/yyyy HH:mm") : "")
                                                 </span>
                                             </div>
                                         }
@@ -129,6 +139,6 @@
     }
 
     .list-group-item:hover {
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
 </style>

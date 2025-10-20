@@ -72,12 +72,21 @@ namespace Audicob.Controllers
                     return Unauthorized();
 
                 var notificaciones = await _notificacionService.ObtenerNotificacionesUsuario(usuarioId);
-                foreach (var notif in notificaciones.Where(n => !n.Leida))
+                var notificacionesNoLeidas = notificaciones.Where(n => !n.Leida).ToList();
+                
+                if (notificacionesNoLeidas.Any())
                 {
-                    await _notificacionService.MarcarComoLeida(notif.Id);
+                    foreach (var notif in notificacionesNoLeidas)
+                    {
+                        await _notificacionService.MarcarComoLeida(notif.Id);
+                    }
+                    TempData["Success"] = $"{notificacionesNoLeidas.Count} notificación(es) marcada(s) como leída(s)";
+                }
+                else
+                {
+                    TempData["Info"] = "No hay notificaciones pendientes por marcar";
                 }
 
-                TempData["Success"] = "Todas las notificaciones marcadas como leídas";
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)

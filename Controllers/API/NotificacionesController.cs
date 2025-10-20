@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Audicob.Data;
 using Audicob.Models;
+using Audicob.Models.DTOs;
 using Audicob.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -40,15 +41,20 @@ namespace Audicob.Controllers.API
                 }
 
                 var notificaciones = await _notificacionService.ObtenerNotificacionesUsuario(usuarioId);
-
-                _logger.LogInformation($"Usuario {usuarioId} obtuvo {notificaciones.Count} notificaciones");
-
-                return Ok(notificaciones);
+                
+                // Convertir a DTO con fechas en hora de Perú
+                var notificacionesDto = notificaciones
+                    .Select(n => NotificacionDto.FromNotificacion(n))
+                    .ToList();
+                
+                _logger.LogInformation($"Usuario {usuarioId} obtuvo {notificacionesDto.Count} notificaciones");
+                
+                return Ok(notificacionesDto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al obtener notificaciones");
-                return StatusCode(500, new { error = "Error al obtener notificaciones" });
+                return StatusCode(500, new { error = "Error al obtener notificaciones", detalle = ex.Message });
             }
         }
 
@@ -81,15 +87,15 @@ namespace Audicob.Controllers.API
                     return Unauthorized(new { error = "Usuario no autenticado" });
 
                 await _notificacionService.MarcarComoLeida(id);
-
+                
                 _logger.LogInformation($"Notificación {id} marcada como leída por usuario {usuarioId}");
-
-                return Ok(new { mensaje = "Notificación marcada como leída" });
+                
+                return Ok(new { mensaje = "Notificación marcada como leída", success = true });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Error al marcar notificación {id}");
-                return StatusCode(500, new { error = "Error al procesar la solicitud" });
+                return StatusCode(500, new { error = "Error al procesar la solicitud", detalle = ex.Message });
             }
         }
     }

@@ -36,8 +36,17 @@ namespace Audicob
             .AddEntityFrameworkStores<ApplicationDbContext>() // Configura Entity Framework como proveedor de almacenamiento
             .AddDefaultTokenProviders(); // Añadir soporte de generación de tokens
 
-            // 🌐 MVC + Razor Pages
-            builder.Services.AddControllersWithViews(); // Configuración de controladores y vistas
+            // 🌐 MVC + Razor Pages con configuración JSON para API
+            builder.Services.AddControllersWithViews()
+                .AddJsonOptions(options =>
+                {
+                    // Configuración para serializar JSON con camelCase
+                    options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+                    options.JsonSerializerOptions.WriteIndented = true;
+                    // Manejar referencias circulares
+                    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+                });
+            
             builder.Services.AddRazorPages(); // Configuración de Razor Pages
 
             // 📬 SERVICIOS DE NOTIFICACIONES
