@@ -437,6 +437,16 @@ namespace Audicob.Controllers
             TempData["Success"] = "Asignaciones reportadas exitosamente.";
             return RedirectToAction("GestionAsignacion");
         }
+        // HU11 Ver reportes anteriores
+        public async Task<IActionResult> ReportesAnteriores()
+        {
+            var reportes = await _db.ReportesAsignacion
+                .OrderByDescending(r => r.FechaRegistro)
+                .ToListAsync();
+
+            return PartialView("_ReportesAnteriores", reportes);
+        }
+
 
     }
 }
