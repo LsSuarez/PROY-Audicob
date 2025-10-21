@@ -3,6 +3,7 @@ using System;
 using Audicob.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Audicob.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251020232253_Add_AsesoresAsignados")]
+    partial class Add_AsesoresAsignados
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -378,62 +381,6 @@ namespace Audicob.Migrations
                     b.ToTable("LineasCredito", (string)null);
                 });
 
-            modelBuilder.Entity("Audicob.Models.Notificacion", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int?>("AsignacionAsesorId")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("ClienteId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Descripcion")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("FechaCreacion")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("FechaLectura")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("IconoTipo")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("Importante")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("Leida")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("SupervisorId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("TipoNotificacion")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Titulo")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AsignacionAsesorId");
-
-                    b.HasIndex("ClienteId");
-
-                    b.HasIndex("SupervisorId", "Leida");
-
-                    b.ToTable("Notificaciones");
-                });
-
             modelBuilder.Entity("Audicob.Models.Pago", b =>
                 {
                     b.Property<int>("Id")
@@ -761,31 +708,6 @@ namespace Audicob.Migrations
                         .IsRequired();
 
                     b.Navigation("Cliente");
-                });
-
-            modelBuilder.Entity("Audicob.Models.Notificacion", b =>
-                {
-                    b.HasOne("Audicob.Models.AsignacionAsesor", "AsignacionAsesor")
-                        .WithMany()
-                        .HasForeignKey("AsignacionAsesorId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("Audicob.Models.Cliente", "Cliente")
-                        .WithMany()
-                        .HasForeignKey("ClienteId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("Audicob.Models.ApplicationUser", "Supervisor")
-                        .WithMany()
-                        .HasForeignKey("SupervisorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("AsignacionAsesor");
-
-                    b.Navigation("Cliente");
-
-                    b.Navigation("Supervisor");
                 });
 
             modelBuilder.Entity("Audicob.Models.Pago", b =>
