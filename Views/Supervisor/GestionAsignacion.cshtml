@@ -6,6 +6,11 @@
 
 <h2>@ViewData["Title"]</h2>
 
+<div class="mb-3">
+    <a asp-action="ExportarPDF" class="btn btn-danger">📄 Descargar PDF</a>
+    <a asp-action="ExportarExcel" class="btn btn-success">📊 Descargar Excel</a>
+</div>
+
 @if (!Model.Any())
 {
     <p>No hay asesores asignados registrados.</p>

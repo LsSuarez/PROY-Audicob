@@ -9,6 +9,10 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using iTextSharp.text;
+using iTextSharp.text.pdf;
+using ClosedXML.Excel;
+using System.IO;
 
 namespace Audicob.Controllers
 {
@@ -446,7 +450,79 @@ namespace Audicob.Controllers
 
             return PartialView("_ReportesAnteriores", reportes);
         }
+        // HU11: Exportar reportes a PDF y Excel
+        public async Task<IActionResult> ExportarPDF()
+        {
+            var asesores = await _db.AsesoresAsignados.ToListAsync();
 
+            using (var memoryStream = new MemoryStream())
+            {
+                Document doc = new Document(PageSize.A4);
+                PdfWriter.GetInstance(doc, memoryStream);
+                doc.Open();
 
+                Paragraph title = new Paragraph("Reporte de Asignación de Carteras\n\n")
+                {
+                    Alignment = Element.ALIGN_CENTER
+                };
+                doc.Add(title);
+
+                PdfPTable table = new PdfPTable(5);
+                table.WidthPercentage = 100;
+                table.AddCell("Asesor");
+                table.AddCell("Cantidad Carteras");
+                table.AddCell("Monto Total");
+                table.AddCell("Cantidad Cuentas");
+                table.AddCell("Estado");
+
+                foreach (var a in asesores)
+                {
+                    table.AddCell(a.AsesorNombre);
+                    table.AddCell(a.CantidadCarteras.ToString());
+                    table.AddCell(a.MontoTotal.ToString("C"));
+                    table.AddCell(a.CantidadCuentas.ToString());
+                    table.AddCell(a.Estado);
+                }
+
+                doc.Add(table);
+                doc.Close();
+
+                byte[] bytes = memoryStream.ToArray();
+                return File(bytes, "application/pdf", "ReporteAsignacion.pdf");
+            }
+        }
+
+        public async Task<IActionResult> ExportarExcel()
+        {
+            var asesores = await _db.AsesoresAsignados.ToListAsync();
+
+            using (var workbook = new XLWorkbook())
+            {
+                var worksheet = workbook.Worksheets.Add("Asignaciones");
+                worksheet.Cell(1, 1).Value = "Asesor";
+                worksheet.Cell(1, 2).Value = "Cantidad Carteras";
+                worksheet.Cell(1, 3).Value = "Monto Total";
+                worksheet.Cell(1, 4).Value = "Cantidad Cuentas";
+                worksheet.Cell(1, 5).Value = "Estado";
+
+                int row = 2;
+                foreach (var a in asesores)
+                {
+                    worksheet.Cell(row, 1).Value = a.AsesorNombre;
+                    worksheet.Cell(row, 2).Value = a.CantidadCarteras;
+                    worksheet.Cell(row, 3).Value = a.MontoTotal;
+                    worksheet.Cell(row, 4).Value = a.CantidadCuentas;
+                    worksheet.Cell(row, 5).Value = a.Estado;
+                    row++;
+                }
+
+                using (var stream = new MemoryStream())
+                {
+                    workbook.SaveAs(stream);
+                    var content = stream.ToArray();
+                    return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ReporteAsignacion.xlsx");
+                }
+            }
+        }
     }
 }
