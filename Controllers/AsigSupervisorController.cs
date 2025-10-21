@@ -1,5 +1,8 @@
 using Audicob.Data;
+using Audicob.Models;
 using Audicob.Models.ViewModels.Cliente;
+using Audicob.Services;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,10 +11,19 @@ namespace Audicob.Controllers
     public class AsigSupervisorController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly INotificacionService _notificacionService;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ILogger<AsigSupervisorController> _logger;
 
-        public AsigSupervisorController(ApplicationDbContext context)
+        public AsigSupervisorController(ApplicationDbContext context,
+            INotificacionService notificacionService,
+            UserManager<ApplicationUser> userManager,
+            ILogger<AsigSupervisorController> logger)
         {
             _context = context;
+            _notificacionService = notificacionService;
+            _userManager = userManager;
+            _logger = logger;
         }
 
         public IActionResult Index(string? filtro, decimal? deudaMin, decimal? deudaMax, string? clasificacion)
@@ -100,18 +112,44 @@ namespace Audicob.Controllers
 
             return PartialView("_TablaAsignacionesPartial", lista);
         }
-        public IActionResult GuardarAsignacion(int clienteId, int asesorId)
+
+        public async Task<IActionResult> GuardarAsignacion(int clienteId, int asesorId)
         {
             try
             {
                 var cliente = _context.Clientes.FirstOrDefault(c => c.Id == clienteId);
-                var asesor = _context.AsignacionesAsesores.FirstOrDefault(a => a.Id == asesorId);
+                var asignacion = _context.AsignacionesAsesores
+                    .Include(a => a.Clientes)
+                    .FirstOrDefault(a => a.Id == asesorId);
 
-                if (cliente == null || asesor == null)
+                if (cliente == null || asignacion == null)
                     return NotFound("Cliente o Asesor no encontrado");
 
-                cliente.AsignacionAsesor = asesor;
+                // Asignar el cliente al asesor
+                cliente.AsignacionAsesor = asignacion;
                 _context.SaveChanges();
+
+                // OBTENER EL SUPERVISOR ACTUAL (el que está realizando la asignación)
+                var usuarioActual = await _userManager.GetUserAsync(User);
+                
+                if (usuarioActual != null)
+                {
+                    // CREAR NOTIFICACIÓN PARA EL SUPERVISOR
+                    var notificacion = new Notificacion
+                    {
+                        SupervisorId = usuarioActual.Id, // ID del Supervisor actual
+                        Titulo = "📋 Nueva Asignación Realizada",
+                        Descripcion = $"Se ha asignado el cliente {cliente.Nombre} al asesor {asignacion.AsesorNombre}. Deuda total: ${cliente.DeudaTotal:N2}",
+                        AsignacionAsesorId = asesorId,
+                        ClienteId = clienteId,
+                        TipoNotificacion = "NuevaAsignacion",
+                        IconoTipo = "📋",
+                        Leida = false
+                    };
+
+                    await _notificacionService.CrearNotificacion(notificacion);
+                    _logger.LogInformation($"Notificación creada para supervisor {usuarioActual.Id} - Cliente {cliente.Nombre} asignado a {asignacion.AsesorNombre}");
+                }
 
                 var lista = _context.AsignacionesAsesores
                     .Include(a => a.Clientes)
@@ -121,6 +159,7 @@ namespace Audicob.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error al guardar asignación");
                 return BadRequest($"Error al guardar: {ex.Message}");
             }
         }

@@ -1,0 +1,13 @@
+@model Audicob.Models.ViewModels.DeudorVM
+@{
+    ViewData["Title"] = "Detalle de Deudor";
+}
+<h3 class="mb-3">@Model.Cliente</h3>
+<ul class="list-group">
+  <li class="list-group-item"><b>Monto:</b> @Model.Monto.ToString("C")</li>
+  <li class="list-group-item"><b>Antigüedad:</b> @Model.AntiguedadDias días</li>
+  <li class="list-group-item"><b>Criticidad:</b> @Model.Criticidad</li>
+  <li class="list-group-item"><b>Vencimiento:</b> @((DateTime?)ViewBag.FechaVencimiento)?.ToString("dd/MM/yyyy")</li>
+  <li class="list-group-item"><b>Estado:</b> @ViewBag.Estado</li>
+</ul>
+<a asp-action="Index" class="btn btn-link mt-3">← Volver</a>

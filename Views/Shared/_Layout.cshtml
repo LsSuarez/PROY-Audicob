@@ -79,6 +79,9 @@
                                     <a class="nav-link" asp-controller="Supervisor" asp-action="GestionAsignacion">
                                         Gestionar la asignación
                                     </a>
+                                
+                                <li class="nav-item dropdown">
+                                    @await Html.PartialAsync("_NotificacionesPartial")
                                 </li>
                             }
 
